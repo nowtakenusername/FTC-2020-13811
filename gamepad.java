@@ -110,8 +110,8 @@ public class gamepad extends LinearOpMode {
             rightPower = -gamepad1.right_stick_y ;
 
             // Send calculated power to wheels
-            leftDrive.setPower(leftPower);
-            rightDrive.setPower(rightPower);
+            leftDrive.setPower(-leftPower);
+            rightDrive.setPower(-rightPower);
             leftFrontDrive.setPower(leftPower);
             rightFrontDrive.setPower(rightPower);
 
