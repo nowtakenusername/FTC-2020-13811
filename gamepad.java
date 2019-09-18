@@ -71,15 +71,15 @@ public class gamepad extends LinearOpMode {
         // step (using the FTC Robot Controller app on the phone).
         leftDrive  = hardwareMap.get(DcMotor.class, "left_back_drive");
         rightDrive = hardwareMap.get(DcMotor.class, "right_back_drive");
-        leftFrontdrive = hardwareMap.get(DcMotor.class, "left_front_drive");
+        leftFrontDrive = hardwareMap.get(DcMotor.class, "left_front_drive");
         rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
-        leftFrontDrive = setDirection(DcMotor.Direction.FORWARD);
-        rightfrontDrive= setDirection(DcMotor.Direction.REVERSE);
+        leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -91,6 +91,10 @@ public class gamepad extends LinearOpMode {
             // Setup a variable for each drive wheel to save power level for telemetry
             double leftPower;
             double rightPower;
+            double moveLeftPower;
+            double moveRightPower;
+            double triggerPowerLeft;
+            double triggerPowerRight
 
             // Choose to drive using either Tank Mode, or POV Mode
             // Comment out the method that's not used.  The default below is POV.
@@ -108,12 +112,26 @@ public class gamepad extends LinearOpMode {
             // - This requires no math, but it is hard to drive forward slowly and keep straight.
             leftPower  = -gamepad1.left_stick_y ;
             rightPower = -gamepad1.right_stick_y ;
+            moveLeftPower = -gamepad1.left_stick_x;
+            moveRightPower = -gamepad1.left_stick_x;
+            triggerPowerLeft = gamepad1.left_trigger;
+            triggerPowerRight = gamepad1.right_trigger;
+
+
 
             // Send calculated power to wheels
-            leftDrive.setPower(leftPower);
-            rightDrive.setPower(rightPower);
-            leftFrontDrive.setPower(leftPower);
-            rightFrontDrive.setPower(rightPower);
+            if (triggerPowerLeft == 0 && triggerPowerRight == 0) {
+                leftDrive.setPower(-leftPower);
+                rightDrive.setPower(-rightPower);
+                leftFrontDrive.setPower(leftPower);
+                rightFrontDrive.setPower(rightPower);
+            } else if (triggerPowerLeft > 0 || triggerPowerRight > 0) {
+                leftDrive.setPower(-moveLeftPower);
+                rightDrive.setPower(-moveRightPower);
+                leftFrontDrive.setPower(moveLeftPower);
+                rightFrontDrive.setPower(moveRightPower);
+            }
+
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
