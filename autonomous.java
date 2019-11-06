@@ -32,23 +32,12 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotor;}}
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 
-/**
- * This file contains an example of an iterative (Non-Linear) "OpMode".
- * An OpMode is a 'program' that runs in either the autonomous or the teleop period of an FTC match.
- * The names of OpModes appear on the menu of the FTC Driver Station.
- * When an selection is made from the menu, the corresponding OpMode
- * class is instantiated on the Robot Controller and executed.
- *
- * This particular OpMode just executes a basic Tank Drive Teleop for a two wheeled robot
- * It includes all the skeletal structure that all iterative OpModes contain.
- *
- * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
- */
 
 @TeleOp(name="autonomous", group="Iterative Opmode")
 @Disabled
@@ -58,6 +47,13 @@ public class autonomous extends OpMode
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
+    private DcMotor leftFrontDrive = null;
+    private DcMotor rightFrontDrive = null;
+    private DcMotor leftPower = null;
+    private DcMotor rightPower = null;
+    private ColorSensor sensorColor = null;
+    private DistanceSensor sensorDistance = null;
+    int motorPower = null;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -66,21 +62,79 @@ public class autonomous extends OpMode
     public void init() {
         telemetry.addData("Status", "Initialized");
 
-        // Initialize the hardware variables. Note that the strings used here as parameters
-        // to 'get' must correspond to the names assigned during the robot configuration
-        // step (using the FTC Robot Controller app on the phone).
+        //The below lines of code initialize the hardware variables to be used later on (such as motors and servos)
         leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
         rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
+        leftFrontDrive = hardwareMap.get(DcMotor.class, "left_front_drive");
+        rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
+
+
+        //this sets each motor to be run using encoders
+        leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
-        leftDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightDrive.setDirection(DcMotor.Direction.REVERSE);
+        leftDrive.setDirection(DcMotor.Direction.FORWARD); //change to reverse if buggy movement occurs
+        rightDrive.setDirection(DcMotor.Direction.REVERSE); //change to forward if buggy movement occurs
+        leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
     }
 
+    //CRAB LEFT AND CRAB RIGHT
+    public void crab(int pulses, String direction) {
+        int wheelPosition = pulses;
+        if (direction == "right") {
+            leftDrive.setTargetPosition(wheelPosition);
+            rightDrive.setTargetPosition(wheelPosition);
+            leftFrontDrive.setTargetPosition(-wheelPosition);
+            rightFrontDrive.setTargetPosition(-wheelPosition);
+        } else if (direction == "left") {
+            leftDrive.setTargetPosition(-wheelPosition);
+            rightDrive.setTargetPosition(-wheelPosition);
+            leftFrontDrive.setTargetPosition(wheelPosition);
+            rightFrontDrive.setTargetPosition(wheelPosition);
+        }
+    }
+
+    public void move(int pulses, String direction) {
+        int wheelPosition = pulses;
+        if (direction == "forward") {
+            leftDrive.setTargetPosition(wheelPosition);
+            rightDrive.setTargetPosition(wheelPosition);
+            leftFrontDrive.setTargetPosition(wheelPosition);
+            rightFrontDrive.setTargetPosition(wheelPosition);
+        } else if (direction == "backwards") {
+            leftDrive.setTargetPosition(-wheelPosition);
+            rightDrive.setTargetPosition(-wheelPosition);
+            leftFrontDrive.setTargetPosition(-wheelPosition);
+            rightFrontDrive.setTargetPosition(-wheelPosition);
+        }
+    }
+    void increasePower(int power) {power += power*0.1;
+    }
+
+    void setPower(int power) {
+        increasePower(power);
+        leftDrive.setPower(power);
+        rightDrive.setPower(power);
+        leftFrontDrive.setPower(power);
+        rightFrontDrive.setPower(power);
+    }
+
+    void setPosition(int pulses) {
+        leftDrive.setTargetPosition(pulses);
+        rightDrive.setTargetPosition(pulses);
+        leftFrontDrive.setTargetPosition(pulses);
+        rightFrontDrive.setTargetPosition(pulses);
+    }
     /*
      * Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
      */
@@ -93,6 +147,18 @@ public class autonomous extends OpMode
      */
     @Override
     public void start() {
+        crab(2240, "left");
+        move(2240, "forward");
+
+        motorPower = 0;
+
+        Color.RGBToHSV((int) (sensorColor.red() * SCALE_FACTOR),
+                (int) (sensorColor.green() * SCALE_FACTOR),
+                (int) (sensorColor.blue() * SCALE_FACTOR),
+                hsvValues);
+
+
+
         runtime.reset();
     }
 
@@ -101,21 +167,6 @@ public class autonomous extends OpMode
      */
     @Override
     public void loop() {
-        // Setup a variable for each drive wheel to save power level for telemetry
-        double leftPower = 0.5;
-        double rightPower = 0.5;
-
-        // Send calculated power to wheels
-        leftDrive.setPower(leftPower);
-        rightDrive.setPower(rightPower);
-
-        sleep(2000);
-
-        leftPower = 0;
-        rightPower = 0;
-
-        leftDrive.setPower(leftPower);
-        rightDrive.setPower(rightPower);
 
 
         // Show the elapsed game time and wheel power.
@@ -125,9 +176,4 @@ public class autonomous extends OpMode
 
     /*
      * Code to run ONCE after the driver hits STOP
-     */
-    @Override
-    public void stop() {
-    }
-
-}
+     */ Log" order="4" sideWeight="0.50105375" side_tool="true" visible="true" weight="0.3293
