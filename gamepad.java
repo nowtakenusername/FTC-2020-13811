@@ -88,7 +88,7 @@ public class gamepad extends LinearOpMode {
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
         leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
-        //IMPORTANT: Port 0 = leftDrive, Port 1 = rightDrive, Port 2 = leftFrontDrive, Port 3 = rightFrontDrive
+        //IMPORTANT: Port 0 = leftDrive, Port 1 = rightDrive, Port 2 = leftFrontDrive, Port 3 = rightFrontDrive... that's how the ports are labeled on the basic Overload Code config.
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -133,6 +133,7 @@ public class gamepad extends LinearOpMode {
                 leftFrontDrive.setPower(leftPower);
                 rightFrontDrive.setPower(rightPower);
             }
+            
             //else if one of the triggers are being pushed (meaning "crab" mode), then send the calculated velocities/powers to the wheels to replicate "crab" mode for the robot
             else if (triggerPowerLeft > 0 || triggerPowerRight > 0) {
                 leftDrive.setPower(-moveLeftPower);
@@ -140,19 +141,26 @@ public class gamepad extends LinearOpMode {
                 leftFrontDrive.setPower(moveLeftPower);
                 rightFrontDrive.setPower(moveRightPower);
             }
-            //and here's the servos
-            if(triggerPowerRight2==0)//traygrabber
-            {
+            
+            if(triggerPowerRight2==0) { //Tray grabber (goes 0 to 20 (actually 18) )
                 trayGrabPos = 0;
                 trayGrab.setPosition(trayGrabPos);
             }
-            else if(triggerPowerRight2>0)
-            {
+            else if(triggerPowerRight2>0) {
                 trayGrabPos = 0.1;
                 trayGrab.setPosition(trayGrabPos);
             }
+            
+            if(triggerPowerLeft2==0) { //Crane grabber (goes 0 to 180)
+                craneGrabPos = 0;
+                craneGrab.setPosition(craneGrabPos);
+            }
+            else if(triggerPowerLeft2>0) {
+                craneGrabPos = 1;
+                craneGrab.setPosition(craneGrabPos);
+            }
 
-            // Show the elapsed game time and wheel power on the android device.
+            // Shows the elapsed game time and other data on the android device.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
             telemetry.addData("CrabMotors", "left (%.2f), right (%.2f)", moveLeftPower, moveRightPower);
@@ -162,3 +170,4 @@ public class gamepad extends LinearOpMode {
             telemetry.update();
         }
     }
+}
