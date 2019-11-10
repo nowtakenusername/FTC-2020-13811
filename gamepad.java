@@ -38,7 +38,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 
-/*
+/**
  * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
  * the autonomous or the teleop period of an FTC match. The names of OpModes appear on the menu
  * of the FTC Driver Station. When an selection is made from the menu, the corresponding OpMode
@@ -61,8 +61,8 @@ public class gamepad extends LinearOpMode {
     private DcMotor rightDrive = null;
     private DcMotor rightFrontDrive = null;
     private DcMotor leftFrontDrive = null;
-    private Servo craneX = null;
-    private Servo craneY = null;
+    private DcMotor craneExtend = null;
+    private DcMotor cranePitch = null;
     private Servo craneGrab = null;
     private Servo trayGrab = null;
 
@@ -73,12 +73,12 @@ public class gamepad extends LinearOpMode {
         telemetry.update();
 
         //The below lines of code initialize the hardware variables to be used later on (such as the motors and servos)
-        leftDrive  = hardwareMap.get(DcMotor.class, "leftDrive");
+        leftDrive  = hardwareMap.get(DcMotor.class, "left");
         rightDrive = hardwareMap.get(DcMotor.class, "rightDrive");
         leftFrontDrive = hardwareMap.get(DcMotor.class, "leftFrontDrive");
         rightFrontDrive = hardwareMap.get(DcMotor.class, "rightFrontDrive");
-        craneX = hardwareMap.get(Servo.class, "craneX");
-        craneY = hardwareMap.get(Servo.class, "craneY");
+        craneExtend = hardwareMap.get(DcMotor.class, "craneExtend");
+        cranePitch = hardwareMap.get(DcMotor.class, "cranePitch");
         craneGrab = hardwareMap.get(Servo.class, "craneGrab");
         trayGrab = hardwareMap.get(Servo.class, "trayGrab");
 
@@ -88,7 +88,7 @@ public class gamepad extends LinearOpMode {
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
         leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
-        //IMPORTANT: Port 0 = leftDrive, Port 1 = rightDrive, Port 2 = leftFrontDrive, Port 3 = rightFrontDrive... that's how the ports are labeled on the basic Overload Code config.
+        //IMPORTANT: Port 0 = leftDrive, Port 1 = rightDrive, Port 2 = leftFrontDrive, Port 3 = rightFrontDrive
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -104,11 +104,12 @@ public class gamepad extends LinearOpMode {
             double moveRightPower;
             double triggerPowerLeft;
             double triggerPowerRight;
-            double craneXPos = 0;
-            double craneYPos = 0;
+            double triggerPowerRight2;
+            double triggerPowerLeft2;
+            double craneExtendPower;
+            double cranePitchPower;
             double craneGrabPos = 0;
             double trayGrabPos = 0;
-            double triggerPowerRight2;
 
 
             //the below variables are containing the value of the gamepad joysticks and other buttons as they are being pressed/moved through each loop
@@ -122,7 +123,11 @@ public class gamepad extends LinearOpMode {
             triggerPowerLeft = gamepad1.left_trigger;
             triggerPowerRight = gamepad1.right_trigger;
             //these are servo variables
+            triggerPowerLeft2 = gamepad2.left_trigger;
             triggerPowerRight2 = gamepad2.right_trigger;
+            //this is the power variable for the crane
+            craneExtendPower = gamepad2.left_stick_y;
+            cranePitchPower = gamepad2.right_stick_y;
 
 
             // Send calculated power to wheels
@@ -133,7 +138,7 @@ public class gamepad extends LinearOpMode {
                 leftFrontDrive.setPower(leftPower);
                 rightFrontDrive.setPower(rightPower);
             }
-            
+
             //else if one of the triggers are being pushed (meaning "crab" mode), then send the calculated velocities/powers to the wheels to replicate "crab" mode for the robot
             else if (triggerPowerLeft > 0 || triggerPowerRight > 0) {
                 leftDrive.setPower(-moveLeftPower);
@@ -141,7 +146,11 @@ public class gamepad extends LinearOpMode {
                 leftFrontDrive.setPower(moveLeftPower);
                 rightFrontDrive.setPower(moveRightPower);
             }
-            
+
+            //this is the part of the code that deals with the crane
+            craneExtend.setPower(craneExtendPower);
+            cranePitch.setPower(cranePitchPower);
+
             if(triggerPowerRight2==0) { //Tray grabber (goes 0 to 20 (actually 18) )
                 trayGrabPos = 0;
                 trayGrab.setPosition(trayGrabPos);
@@ -150,7 +159,7 @@ public class gamepad extends LinearOpMode {
                 trayGrabPos = 0.1;
                 trayGrab.setPosition(trayGrabPos);
             }
-            
+
             if(triggerPowerLeft2==0) { //Crane grabber (goes 0 to 180)
                 craneGrabPos = 0;
                 craneGrab.setPosition(craneGrabPos);
@@ -165,7 +174,7 @@ public class gamepad extends LinearOpMode {
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
             telemetry.addData("CrabMotors", "left (%.2f), right (%.2f)", moveLeftPower, moveRightPower);
             telemetry.addData("Triggers", "left (%.2f), right (%.2f)", triggerPowerLeft, triggerPowerRight);
-            telemetry.addData("Crane Servos", "craneX (%.2f), craneY (%.2f)", craneXPos, craneYPos);
+            telemetry.addData("Crane Servos", "craneExtend (%.2f), cranePitch (%.2f)", craneExtend, cranePitch);
             telemetry.addData("Grabbers", "craneGrab (%.2f), trayGrab (%.2f)", craneGrabPos, trayGrabPos);
             telemetry.update();
         }
