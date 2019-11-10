@@ -30,6 +30,7 @@
 package org.firstinspires.ftc.robotcontroller.external.samples;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -60,26 +61,34 @@ public class gamepad extends LinearOpMode {
     private DcMotor rightDrive = null;
     private DcMotor rightFrontDrive = null;
     private DcMotor leftFrontDrive = null;
+    private Servo craneX = null;
+    private Servo craneY = null;
+    private Servo craneGrab = null;
+    private Servo trayGrab = null;
+
 
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        // Initialize the hardware variables. Note that the strings used here as parameters
-        // to 'get' must correspond to the names assigned during the robot configuration
-        // step (using the FTC Robot Controller app on the phone).
-        leftDrive  = hardwareMap.get(DcMotor.class, "left_back_drive");
-        rightDrive = hardwareMap.get(DcMotor.class, "right_back_drive");
-        leftFrontdrive = hardwareMap.get(DcMotor.class, "left_front_drive");
-        rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
+        //The below lines of code initialize the hardware variables to be used later on (such as the motors and servos)
+        leftDrive  = hardwareMap.get(DcMotor.class, "leftDrive");
+        rightDrive = hardwareMap.get(DcMotor.class, "rightDrive");
+        leftFrontDrive = hardwareMap.get(DcMotor.class, "leftFrontDrive");
+        rightFrontDrive = hardwareMap.get(DcMotor.class, "rightFrontDrive");
+        craneX = hardwareMap.get(Servo.class, "craneX");
+        craneY = hardwareMap.get(Servo.class, "craneY");
+        craneGrab = hardwareMap.get(Servo.class, "craneGrab");
+        trayGrab = hardwareMap.get(Servo.class, "trayGrab");
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
-        leftFrontDrive = setDirection(DcMotor.Direction.FORWARD);
-        rightfrontDrive= setDirection(DcMotor.Direction.REVERSE);
+        leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
+        //IMPORTANT: Port 0 = leftDrive, Port 1 = rightDrive, Port 2 = leftFrontDrive, Port 3 = rightFrontDrive
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -91,34 +100,65 @@ public class gamepad extends LinearOpMode {
             // Setup a variable for each drive wheel to save power level for telemetry
             double leftPower;
             double rightPower;
+            double moveLeftPower;
+            double moveRightPower;
+            double triggerPowerLeft;
+            double triggerPowerRight;
+            double craneXPos = 0;
+            double craneYPos = 0;
+            double craneGrabPos = 0;
+            double trayGrabPos = 0;
+            double triggerPowerRight2;
 
-            // Choose to drive using either Tank Mode, or POV Mode
-            // Comment out the method that's not used.  The default below is POV.
 
-            // POV Mode uses left stick to go forward, and right stick to turn.
-            // - This uses basic math to combine motions and is easier to drive straight.
-            /*
-            double drive = -gamepad1.left_stick_y;
-            double turn  =  gamepad1.right_stick_x;
-            leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
-            rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
-            */
+            //the below variables are containing the value of the gamepad joysticks and other buttons as they are being pressed/moved through each loop
+            //these are the variables for the left and right velocities/powers set for each wheel
+            leftPower  = -gamepad1.left_stick_y;
+            rightPower = -gamepad1.right_stick_y;
+            //these are the variables for the crab-like movement of the mechanum wheel robot
+            moveLeftPower = -gamepad1.left_stick_x;
+            moveRightPower = -gamepad1.left_stick_x;
+            //these are the variables for the triggers on the gamepad to switch between the "crab" mode to the regular "tank" mode
+            triggerPowerLeft = gamepad1.left_trigger;
+            triggerPowerRight = gamepad1.right_trigger;
+            //these are servo variables
+            triggerPowerRight2 = gamepad2.right_trigger;
 
-            // Tank Mode uses one stick to control each wheel.
-            // - This requires no math, but it is hard to drive forward slowly and keep straight.
-            leftPower  = -gamepad1.left_stick_y ;
-            rightPower = -gamepad1.right_stick_y ;
 
             // Send calculated power to wheels
-            leftDrive.setPower(leftPower);
-            rightDrive.setPower(rightPower);
-            leftFrontDrive.setPower(leftPower);
-            rightFrontDrive.setPower(rightPower);
+            //if both of the triggers on the gamepad are not being pulled, then send the calculated velocities/powers to the wheels to replicate "tank" mode for the robot
+            if (triggerPowerLeft == 0 && triggerPowerRight == 0) {
+                leftDrive.setPower(-leftPower);
+                rightDrive.setPower(-rightPower);
+                leftFrontDrive.setPower(leftPower);
+                rightFrontDrive.setPower(rightPower);
+            }
+            //else if one of the triggers are being pushed (meaning "crab" mode), then send the calculated velocities/powers to the wheels to replicate "crab" mode for the robot
+            else if (triggerPowerLeft > 0 || triggerPowerRight > 0) {
+                leftDrive.setPower(-moveLeftPower);
+                rightDrive.setPower(-moveRightPower);
+                leftFrontDrive.setPower(moveLeftPower);
+                rightFrontDrive.setPower(moveRightPower);
+            }
+            //and here's the servos
+            if(triggerPowerRight2==0)//traygrabber
+            {
+                trayGrabPos = 0;
+                trayGrab.setPosition(trayGrabPos);
+            }
+            else if(triggerPowerRight2>0)
+            {
+                trayGrabPos = 0.1;
+                trayGrab.setPosition(trayGrabPos);
+            }
 
-            // Show the elapsed game time and wheel power.
+            // Show the elapsed game time and wheel power on the android device.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
+            telemetry.addData("CrabMotors", "left (%.2f), right (%.2f)", moveLeftPower, moveRightPower);
+            telemetry.addData("Triggers", "left (%.2f), right (%.2f)", triggerPowerLeft, triggerPowerRight);
+            telemetry.addData("Crane Servos", "craneX (%.2f), craneY (%.2f)", craneXPos, craneYPos);
+            telemetry.addData("Grabbers", "craneGrab (%.2f), trayGrab (%.2f)", craneGrabPos, trayGrabPos);
             telemetry.update();
         }
     }
-}
