@@ -73,7 +73,7 @@ public class gamepad extends LinearOpMode {
         telemetry.update();
 
         //The below lines of code initialize the hardware variables to be used later on (such as the motors and servos)
-        leftDrive  = hardwareMap.get(DcMotor.class, "left");
+        leftDrive  = hardwareMap.get(DcMotor.class, "leftDrive");
         rightDrive = hardwareMap.get(DcMotor.class, "rightDrive");
         leftFrontDrive = hardwareMap.get(DcMotor.class, "leftFrontDrive");
         rightFrontDrive = hardwareMap.get(DcMotor.class, "rightFrontDrive");
