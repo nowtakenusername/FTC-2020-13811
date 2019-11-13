@@ -46,8 +46,8 @@ public class gamepad extends LinearOpMode {
     private DcMotor rightBackDrive = null;
     private DcMotor rightFrontDrive = null;
     private DcMotor leftFrontDrive = null;
-    //private DcMotor craneExtend = null;
-    //private DcMotor cranePitch = null;
+    private DcMotor craneExtend = null;
+    private DcMotor cranePitch = null;
     private Servo craneGrab = null;
     private Servo trayGrab = null;
 
@@ -58,22 +58,20 @@ public class gamepad extends LinearOpMode {
         telemetry.update();
 
         //Initalize the motors, servos, to their ports
-        //Speaking of ports, Port 0 = left back motor, Port 1 = right back motor, Port 2 = left front drive, Port 3 = right front drive, SPort 0 = crane servo, Sport 1 = tray servo
-        leftBackDrive  = hardwareMap.get(DcMotor.class, "leftBackDrive");
-        rightBackDrive = hardwareMap.get(DcMotor.class, "rightBackDrive");
-        leftFrontDrive = hardwareMap.get(DcMotor.class, "leftFrontDrive");
-        rightFrontDrive = hardwareMap.get(DcMotor.class, "rightFrontDrive");
-        //craneExtend = hardwareMap.get(DcMotor.class, "craneExtend");
-        //cranePitch = hardwareMap.get(DcMotor.class, "cranePitch");
-        craneGrab = hardwareMap.get(Servo.class, "craneGrab");
-        trayGrab = hardwareMap.get(Servo.class, "trayGrab");
+        leftBackDrive  = hardwareMap.get(DcMotor.class, "leftBackDrive"); //port 0, hub1
+        rightBackDrive = hardwareMap.get(DcMotor.class, "rightBackDrive"); //port 1, hub1
+        leftFrontDrive = hardwareMap.get(DcMotor.class, "leftFrontDrive"); //port 2, hub1
+        rightFrontDrive = hardwareMap.get(DcMotor.class, "rightFrontDrive"); //port 3, hub1
+        craneExtend = hardwareMap.get(DcMotor.class, "craneExtend"); //port 0, hub2
+        cranePitch = hardwareMap.get(DcMotor.class, "cranePitch"); //port 1, hub2
+        craneGrab = hardwareMap.get(Servo.class, "craneGrab"); //port 0, servo
+        trayGrab = hardwareMap.get(Servo.class, "trayGrab"); //port 1, servo
 
         //Setting the motor directions
         leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
         leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
-        //IMPORTANT: Port 0 = leftDrive, Port 1 = rightDrive, Port 2 = leftFrontDrive, Port 3 = rightFrontDrive
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -159,7 +157,7 @@ public class gamepad extends LinearOpMode {
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
             telemetry.addData("CrabMotors", "left (%.2f), right (%.2f)", moveLeftPower, moveRightPower);
             telemetry.addData("Triggers", "left (%.2f), right (%.2f)", triggerPowerLeft, triggerPowerRight);
-            //telemetry.addData("Crane Servos", "craneExtend (%.2f), cranePitch (%.2f)", craneExtend, cranePitch);
+            telemetry.addData("Crane Motors", "craneExtend (%.2f), cranePitch (%.2f)", craneExtend, cranePitch);
             telemetry.addData("Grabbers", "craneGrab (%.2f), trayGrab (%.2f)", craneGrabPos, trayGrabPos);
             telemetry.update();
         }
