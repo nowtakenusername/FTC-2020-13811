@@ -125,8 +125,8 @@ public class gamepad extends LinearOpMode {
             //else if one of the triggers are being pushed (meaning "crab" mode), then send the calculated velocities/powers to the wheels to replicate "crab" mode for the robot
             else if (triggerPowerLeft > 0 || triggerPowerRight > 0) {
                 leftBackDrive.setPower(moveLeftPower);
-                rightBackDrive.setPower(moveRightPower);
-                leftFrontDrive.setPower(-moveLeftPower);
+                rightBackDrive.setPower(-moveRightPower);
+                leftFrontDrive.setPower(moveLeftPower);
                 rightFrontDrive.setPower(-moveRightPower);
             }
 
