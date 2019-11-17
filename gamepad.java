@@ -27,7 +27,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.robotcontroller.external.samples;
+package org.firstinspires.ftc.robotcontroller.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -38,19 +38,20 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 @TeleOp(name="gamepad", group="Linear Opmode")
-public class gamepad extends LinearOpMode {
+public class gamepad extends LinearOpMode { //Sort of just there, this stuff initializes sometime before everything happens
 
     //Declaring OpMode members
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftBackDrive = null;
-    private DcMotor rightBackDrive = null;
-    private DcMotor rightFrontDrive = null;
-    private DcMotor leftFrontDrive = null;
-    private DcMotor craneExtend = null;
-    private DcMotor cranePitch = null;
-    private Servo craneGrab = null;
-    private Servo trayGrab = null;
 
+    private DcMotor leftBackDrive;
+    private DcMotor rightBackDrive;
+    private DcMotor rightFrontDrive;
+    private DcMotor leftFrontDrive;
+    private DcMotor craneExtend;
+    private DcMotor cranePitch;
+    private DcMotor craneElevate;
+    private Servo craneGrab;
+    private Servo trayGrab;
 
     @Override
     public void runOpMode() {
@@ -64,6 +65,7 @@ public class gamepad extends LinearOpMode {
         rightFrontDrive = hardwareMap.get(DcMotor.class, "rightFrontDrive"); //port 3, hub1
         craneExtend = hardwareMap.get(DcMotor.class, "craneExtend"); //port 0, hub2
         cranePitch = hardwareMap.get(DcMotor.class, "cranePitch"); //port 1, hub2
+        craneElevate = hardwareMap.get(DcMotor.class, "craneElevate"); //port 2, hub2
         craneGrab = hardwareMap.get(Servo.class, "craneGrab"); //port 0, servo
         trayGrab = hardwareMap.get(Servo.class, "trayGrab"); //port 1, servo
 
@@ -91,6 +93,7 @@ public class gamepad extends LinearOpMode {
             double triggerPowerLeft2;
             double craneExtendPower;
             double cranePitchPower;
+            double craneElevatePower;
             double craneGrabPos = 0;
             double trayGrabPos = 0;
 
@@ -111,7 +114,7 @@ public class gamepad extends LinearOpMode {
             //this is the power variable for the crane
             craneExtendPower = gamepad2.left_stick_y;
             cranePitchPower = gamepad2.right_stick_y;
-
+            craneElevatePower = gamepad2.left_stick_y;
 
             // Send calculated power to wheels
             //if both of the triggers on the gamepad are not being pulled, then send the calculated velocities/powers to the wheels to replicate "tank" mode for the robot
@@ -126,13 +129,28 @@ public class gamepad extends LinearOpMode {
             else if (triggerPowerLeft > 0 || triggerPowerRight > 0) {
                 leftBackDrive.setPower(moveLeftPower);
                 rightBackDrive.setPower(-moveRightPower);
-                leftFrontDrive.setPower(moveLeftPower);
-                rightFrontDrive.setPower(-moveRightPower);
+                leftFrontDrive.setPower(-moveLeftPower);
+                rightFrontDrive.setPower(moveRightPower);
             }
 
             //this is the part of the code that deals with the crane
-            //craneExtend.setPower(craneExtendPower);
-            //cranePitch.setPower(cranePitchPower);
+            if(gamepad2.right_stick_y!=0)
+            {
+                cranePitch.setPower(cranePitchPower);
+            }
+            else
+            {
+                cranePitch.setPower(0.02);
+            }
+
+            if(gamepad2.y)
+            {
+                craneElevate.setPower(craneElevatePower);
+            }
+            else
+            {
+                craneExtend.setPower(craneExtendPower);
+            }
 
             if(triggerPowerRight2==0) { //Tray grabber (goes 0 to 20 (actually 18) )
                 trayGrabPos = 0;
@@ -148,16 +166,16 @@ public class gamepad extends LinearOpMode {
                 craneGrab.setPosition(craneGrabPos);
             }
             else if(triggerPowerLeft2>0) {
-                craneGrabPos = 0.6;
+                craneGrabPos = 0.5;
                 craneGrab.setPosition(craneGrabPos);
             }
 
-            // Shows the elapsed game time and other data on the android device.
+            //Shows the elapsed game time and other data on the android device.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
             telemetry.addData("CrabMotors", "left (%.2f), right (%.2f)", moveLeftPower, moveRightPower);
             telemetry.addData("Triggers", "left (%.2f), right (%.2f)", triggerPowerLeft, triggerPowerRight);
-            telemetry.addData("Crane Motors", "craneExtend (%.2f), cranePitch (%.2f)", craneExtend, cranePitch);
+            telemetry.addData("Crane Motors", "craneExtend (%.2f), cranePitch (%.2f)", craneExtendPower, cranePitchPower);
             telemetry.addData("Grabbers", "craneGrab (%.2f), trayGrab (%.2f)", craneGrabPos, trayGrabPos);
             telemetry.update();
         }
