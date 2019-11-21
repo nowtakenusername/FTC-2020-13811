@@ -27,7 +27,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.robotcontroller.teamcode;
+package org.firstinspires.ftc.robotcontroller.external.samples;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -36,9 +36,11 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.hardware.HardwareMap; //TAKE PITY ON ME HARDWAREMAP.JAVA
 
 @TeleOp(name="gamepad", group="Linear Opmode")
-public class gamepad extends LinearOpMode { //Sort of just there, this stuff initializes sometime before everything happens
+//@Disabled
+public class gamepad extends LinearOpMode {
 
     //Declaring OpMode members
     private ElapsedTime runtime = new ElapsedTime();
@@ -53,16 +55,13 @@ public class gamepad extends LinearOpMode { //Sort of just there, this stuff ini
     private Servo craneGrab;
     private Servo trayGrab;
 
-    @Override
     public void runOpMode() {
-        telemetry.addData("Status", "Initialized");
-        telemetry.update();
 
         //Initalize the motors, servos, to their ports
-        leftBackDrive  = hardwareMap.get(DcMotor.class, "leftBackDrive"); //port 0, hub1
-        rightBackDrive = hardwareMap.get(DcMotor.class, "rightBackDrive"); //port 1, hub1
-        leftFrontDrive = hardwareMap.get(DcMotor.class, "leftFrontDrive"); //port 2, hub1
-        rightFrontDrive = hardwareMap.get(DcMotor.class, "rightFrontDrive"); //port 3, hub1
+        leftBackDrive  = hardwareMap.get(DcMotor.class, "left_back_drive"); //port 0, hub1
+        rightBackDrive = hardwareMap.get(DcMotor.class, "right_back_drive"); //port 1, hub1
+        leftFrontDrive = hardwareMap.get(DcMotor.class, "left_front_drive"); //port 2, hub1
+        rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive"); //port 3, hub1
         craneExtend = hardwareMap.get(DcMotor.class, "craneExtend"); //port 0, hub2
         cranePitch = hardwareMap.get(DcMotor.class, "cranePitch"); //port 1, hub2
         craneElevate = hardwareMap.get(DcMotor.class, "craneElevate"); //port 2, hub2
@@ -74,6 +73,12 @@ public class gamepad extends LinearOpMode { //Sort of just there, this stuff ini
         rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
         leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
+
+        craneElevate.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        craneElevate.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        telemetry.addData("Status", "Initialized");
+        telemetry.update(); //Done "initalizing"
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -97,32 +102,49 @@ public class gamepad extends LinearOpMode { //Sort of just there, this stuff ini
             double craneGrabPos = 0;
             double trayGrabPos = 0;
 
-
             //the below variables are containing the value of the gamepad joysticks and other buttons as they are being pressed/moved through each loop
-            //these are the variables for the left and right velocities/powers set for each wheel
+            //these are the variables for the left and right wheels
             leftPower  = gamepad1.left_stick_y;
             rightPower = gamepad1.right_stick_y;
-            //these are the variables for the crab-like movement of the mechanum wheel robot
+            //these are the variables for the crab-like movement of the mechanum wheels
             moveLeftPower = -gamepad1.left_stick_x;
             moveRightPower = -gamepad1.left_stick_x;
-            //these are the variables for the triggers on the gamepad to switch between the "crab" mode to the regular "tank" mode
+            //these are the variables for the triggers on the gamepad, if pressed the robot will go to "crab mode"
             triggerPowerLeft = gamepad1.left_trigger;
             triggerPowerRight = gamepad1.right_trigger;
-            //these are servo variables
+            //these are the variables for the triggers on the gamepad, utilised for the crane's grasper and the tray clip
             triggerPowerLeft2 = gamepad2.left_trigger;
             triggerPowerRight2 = gamepad2.right_trigger;
-            //this is the power variable for the crane
+            //these are the power variables for the crane
             craneExtendPower = gamepad2.left_stick_y;
             cranePitchPower = gamepad2.right_stick_y;
-            craneElevatePower = gamepad2.left_stick_y;
 
             // Send calculated power to wheels
             //if both of the triggers on the gamepad are not being pulled, then send the calculated velocities/powers to the wheels to replicate "tank" mode for the robot
             if (triggerPowerLeft == 0 && triggerPowerRight == 0) {
-                leftBackDrive.setPower(leftPower);
-                rightBackDrive.setPower(rightPower);
-                leftFrontDrive.setPower(leftPower);
-                rightFrontDrive.setPower(rightPower);
+                if(gamepad1.left_stick_y>0.5) {
+                    leftBackDrive.setPower(leftPower);
+                    leftFrontDrive.setPower(leftPower);
+                }
+                else {
+                    leftBackDrive.setPower(leftPower/2);
+                    leftFrontDrive.setPower(leftPower/2);
+                }
+                if(gamepad1.right_stick_y>0.5) {
+                    rightBackDrive.setPower(rightPower);
+                    rightFrontDrive.setPower(rightPower);
+                }
+                else {
+                    rightBackDrive.setPower(rightPower/2);
+                    rightFrontDrive.setPower(rightPower/2);
+                }
+
+                if(gamepad1.left_bumper) //making small adjustments... 
+                    leftPower = 0.1;
+
+                if(gamepad1.right_bumper)
+                    rightPower = 0.1;
+
             }
 
             //else if one of the triggers are being pushed (meaning "crab" mode), then send the calculated velocities/powers to the wheels to replicate "crab" mode for the robot
@@ -134,22 +156,25 @@ public class gamepad extends LinearOpMode { //Sort of just there, this stuff ini
             }
 
             //this is the part of the code that deals with the crane
-            if(gamepad2.right_stick_y!=0)
-            {
-                cranePitch.setPower(cranePitchPower);
+            if(gamepad2.y) { //press y, it goes up. press a, it goes down. it's so much harder than it sounds
+                craneElevate.setTargetPosition(2000);
+                while(craneElevate.getCurrentPosition()<2000)
+                    cranePitch.setPower(0.35); //makes the crane match it
+                craneElevate.setPower(1);
             }
             else
             {
-                cranePitch.setPower(0.02);
+                craneElevate.setPower(0);
             }
-
-            if(gamepad2.y)
-            {
-                craneElevate.setPower(craneElevatePower);
+            if(gamepad2.a) {
+                craneElevate.setTargetPosition(0);
+                while(craneElevate.getCurrentPosition()>0)
+                    craneElevate.setPower(-0.5);
+                cranePitch.setPower(0.05); //yeah, its goes down real fast
             }
             else
             {
-                craneExtend.setPower(craneExtendPower);
+                craneElevate.setPower(0);
             }
 
             if(triggerPowerRight2==0) { //Tray grabber (goes 0 to 20 (actually 18) )
@@ -162,20 +187,36 @@ public class gamepad extends LinearOpMode { //Sort of just there, this stuff ini
             }
 
             if(triggerPowerLeft2==0) { //Crane grabber (goes 0 to 90)
-                craneGrabPos = 0;
-                craneGrab.setPosition(craneGrabPos);
-            }
-            else if(triggerPowerLeft2>0) {
                 craneGrabPos = 0.5;
                 craneGrab.setPosition(craneGrabPos);
+                cranePitch.setPower(-cranePitchPower);
+            }
+            else if(triggerPowerLeft2>0) {
+                craneGrabPos = 0;
+                craneGrab.setPosition(craneGrabPos);
+                if(gamepad2.right_stick_y!=0) //Adds a bit of power to keep the crane stable
+                {
+                    cranePitch.setPower(-cranePitchPower);
+                }
+                else
+                {
+                    cranePitch.setPower(0.02);
+                }
+            }
+
+            //However, for testing purposes and emergency purposes there will be a needed part to the code: 
+            if(gamepad2.left_trigger==1 && gamepad2.right_trigger==1) //The Debug Menu! press both triggers to enter
+            {
+                //craneElevate.setPower(gamepad2.left_stick_y); //spools up the pulley if needed for emergencies
+                cranePitch.setPower(-gamepad2.right_stick_y);
             }
 
             //Shows the elapsed game time and other data on the android device.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
             telemetry.addData("CrabMotors", "left (%.2f), right (%.2f)", moveLeftPower, moveRightPower);
-            telemetry.addData("Triggers", "left (%.2f), right (%.2f)", triggerPowerLeft, triggerPowerRight);
             telemetry.addData("Crane Motors", "craneExtend (%.2f), cranePitch (%.2f)", craneExtendPower, cranePitchPower);
+            telemetry.addData("Crane Position", craneElevate.getCurrentPosition());
             telemetry.addData("Grabbers", "craneGrab (%.2f), trayGrab (%.2f)", craneGrabPos, trayGrabPos);
             telemetry.update();
         }
