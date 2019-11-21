@@ -29,105 +29,140 @@
 
 package org.firstinspires.ftc.robotcontroller.external.samples;
 
+
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-/**
- * This file contains an example of an iterative (Non-Linear) "OpMode".
- * An OpMode is a 'program' that runs in either the autonomous or the teleop period of an FTC match.
- * The names of OpModes appear on the menu of the FTC Driver Station.
- * When an selection is made from the menu, the corresponding OpMode
- * class is instantiated on the Robot Controller and executed.
- *
- * This particular OpMode just executes a basic Tank Drive Teleop for a two wheeled robot
- * It includes all the skeletal structure that all iterative OpModes contain.
- *
- * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
- */
 
 @TeleOp(name="autonomous", group="Iterative Opmode")
-@Disabled
+//@Disabled
 public class autonomous extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftDrive = null;
-    private DcMotor rightDrive = null;
+    private DcMotor leftBackDrive;
+    private DcMotor rightBackDrive;
+    private DcMotor leftFrontDrive;
+    private DcMotor rightFrontDrive;
+    private DcMotor leftPower;
+    private DcMotor rightPower;
+    private double forwardsPower;
+    private Servo trayGrab;
 
-    /*
-     * Code to run ONCE when the driver hits INIT
-     */
+    //Code to run ONCE when the driver hits INIT
+
     @Override
     public void init() {
         telemetry.addData("Status", "Initialized");
 
-        // Initialize the hardware variables. Note that the strings used here as parameters
-        // to 'get' must correspond to the names assigned during the robot configuration
-        // step (using the FTC Robot Controller app on the phone).
-        leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
-        rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
+        //The below lines of code initialize the hardware variables to be used later on (such as motors and servos)
+        leftBackDrive  = hardwareMap.get(DcMotor.class, "left_back_drive");
+        rightBackDrive = hardwareMap.get(DcMotor.class, "right_back_drive");
+        leftFrontDrive = hardwareMap.get(DcMotor.class, "left_front_drive");
+        rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
+        trayGrab = hardwareMap.get(Servo.class, "trayGrab");
+
+        leftBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        //this sets each motor to be run using encoders
+        leftBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+
+        //sets up the gyroscope
+        //gyro = hardwareMap.get();
+
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
-        leftDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightDrive.setDirection(DcMotor.Direction.REVERSE);
+        leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
+        leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
     }
 
-    /*
-     * Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
-     */
+    //CRAB LEFT AND CRAB RIGHT
+    public void crab(int pulses, String direction) {
+        int wheelPosition = pulses;
+        if (direction == "right") {
+            leftBackDrive.setTargetPosition(wheelPosition);
+            rightBackDrive.setTargetPosition(wheelPosition);
+            leftFrontDrive.setTargetPosition(-wheelPosition);
+            rightFrontDrive.setTargetPosition(-wheelPosition);
+        } else if (direction == "left") {
+            leftBackDrive.setTargetPosition(-wheelPosition);
+            rightBackDrive.setTargetPosition(-wheelPosition);
+            leftFrontDrive.setTargetPosition(wheelPosition);
+            rightFrontDrive.setTargetPosition(wheelPosition);
+        }
+    }
+
+    public void move(int pulses, String direction) {
+        int wheelPosition = pulses;
+        if (direction == "forward") {
+            leftBackDrive.setTargetPosition(wheelPosition);
+            rightBackDrive.setTargetPosition(wheelPosition);
+            leftFrontDrive.setTargetPosition(wheelPosition);
+            rightFrontDrive.setTargetPosition(wheelPosition);
+        }
+        else if (direction == "backwards") {
+            leftBackDrive.setTargetPosition(-wheelPosition);
+            rightBackDrive.setTargetPosition(-wheelPosition);
+            leftFrontDrive.setTargetPosition(-wheelPosition);
+            rightFrontDrive.setTargetPosition(-wheelPosition);
+        }
+    }
+
+    void setPower(double power) {
+        forwardsPower = power; //more for telemetry
+        leftBackDrive.setPower(power);
+        rightBackDrive.setPower(power);
+        leftFrontDrive.setPower(power);
+        rightFrontDrive.setPower(power);
+    }
+
+    void setPosition(int pulses) {
+        leftBackDrive.setTargetPosition(pulses);
+        rightBackDrive.setTargetPosition(pulses);
+        leftFrontDrive.setTargetPosition(pulses);
+        rightFrontDrive.setTargetPosition(pulses);
+    }
+
+    //Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
     @Override
     public void init_loop() {
     }
 
-    /*
-     * Code to run ONCE when the driver hits PLAY
-     */
+    //Code to run ONCE when the driver hits PLAY
     @Override
     public void start() {
+
+        setPower(0.5);
+        move(1000, "forward");
         runtime.reset();
     }
 
-    /*
-     * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
-     */
+    //Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
     @Override
     public void loop() {
-        // Setup a variable for each drive wheel to save power level for telemetry
-        double leftPower = 0.5;
-        double rightPower = 0.5;
-
-        // Send calculated power to wheels
-        leftDrive.setPower(leftPower);
-        rightDrive.setPower(rightPower);
-
-        sleep(2000);
-
-        leftPower = 0;
-        rightPower = 0;
-
-        leftDrive.setPower(leftPower);
-        rightDrive.setPower(rightPower);
-
 
         // Show the elapsed game time and wheel power.
-        telemetry.addData("Status", "Run Time: " + runtime.toString());
-        telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
+        telemetry.addData("Power", "power (%.2f)", forwardsPower);
     }
 
-    /*
-     * Code to run ONCE after the driver hits STOP
-     */
-    @Override
-    public void stop() {
-    }
-
+    //Code to run ONCE after the driver hits STOP
 }
