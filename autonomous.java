@@ -31,6 +31,7 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
 
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -40,9 +41,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 
-@TeleOp(name="autonomous", group="Iterative Opmode")
+@Autonomous(name="autonomousLeft", group="Iterative Opmode")
 //@Disabled
-public class autonomous extends OpMode
+public class autonomousBlueSquare extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -68,24 +69,26 @@ public class autonomous extends OpMode
         rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
         trayGrab = hardwareMap.get(Servo.class, "trayGrab");
 
+        //this sets each motor to be run using encoders
         leftBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        //this sets each motor to be run using encoders
+        
         leftBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         leftFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-
+        
+        leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        leftFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        
         //sets up the gyroscope
         //gyro = hardwareMap.get();
-
-
-        // Most robots need the motor on one side to be reversed to drive forward
-        // Reverse the motor that runs backwards when connected directly to the battery
+        
+        //Sets motor direction
         leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
         leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
@@ -114,10 +117,12 @@ public class autonomous extends OpMode
     public void move(int pulses, String direction) {
         int wheelPosition = pulses;
         if (direction == "forward") {
+            while(pulses>leftBackDrive.getCurrentPosition()) {
             leftBackDrive.setTargetPosition(wheelPosition);
-            rightBackDrive.setTargetPosition(wheelPosition);
+            rightBackDrive.setTargetPosition(-wheelPosition);
             leftFrontDrive.setTargetPosition(wheelPosition);
-            rightFrontDrive.setTargetPosition(wheelPosition);
+            rightFrontDrive.setTargetPosition(-wheelPosition);
+            }
         }
         else if (direction == "backwards") {
             leftBackDrive.setTargetPosition(-wheelPosition);
@@ -141,6 +146,20 @@ public class autonomous extends OpMode
         leftFrontDrive.setTargetPosition(pulses);
         rightFrontDrive.setTargetPosition(pulses);
     }
+    
+    public void turn(String preset) { //Turns the robot 45 degrees when initiated.
+        if (preset == "right") {
+            leftBackDrive.setTargetPosition(100);
+            rightBackDrive.setTargetPosition(-100);
+            leftFrontDrive.setTargetPosition(100);
+            rightFrontDrive.setTargetPosition(-100);
+        } else if (preset == "left") {
+            leftBackDrive.setTargetPosition(-100);
+            rightBackDrive.setTargetPosition(100);
+            leftFrontDrive.setTargetPosition(-100);
+            rightFrontDrive.setTargetPosition(100);
+        }
+    }
 
     //Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
     @Override
@@ -150,9 +169,11 @@ public class autonomous extends OpMode
     //Code to run ONCE when the driver hits PLAY
     @Override
     public void start() {
-
         setPower(0.5);
-        move(1000, "forward");
+        move(500, "forward");
+        setPower(0.2);
+        turn("right");
+        setPower(0);
         runtime.reset();
     }
 
