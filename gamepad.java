@@ -36,7 +36,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
-import com.qualcomm.robotcore.hardware.HardwareMap; //TAKE PITY ON ME HARDWAREMAP.JAVA
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
 @TeleOp(name="gamepad", group="Linear Opmode")
 //@Disabled
@@ -54,6 +54,9 @@ public class gamepad extends LinearOpMode {
     private DcMotor craneElevate;
     private Servo craneGrab;
     private Servo trayGrab;
+
+
+
 
     public void runOpMode() {
 
@@ -74,8 +77,9 @@ public class gamepad extends LinearOpMode {
         leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
 
-        craneElevate.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        craneElevate.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //Initialize some picky variables
+        boolean cranePowerToggle = false;
+
 
         telemetry.addData("Status", "Initialized");
         telemetry.update(); //Done "initalizing"
@@ -122,93 +126,83 @@ public class gamepad extends LinearOpMode {
             // Send calculated power to wheels
             //if both of the triggers on the gamepad are not being pulled, then send the calculated velocities/powers to the wheels to replicate "tank" mode for the robot
             if (triggerPowerLeft == 0 && triggerPowerRight == 0) {
-                if(gamepad1.left_stick_y>0.5) {
-                    leftBackDrive.setPower(leftPower);
-                    leftFrontDrive.setPower(leftPower);
+                if(gamepad1.left_stick_y>0.7||gamepad1.left_stick_y<-0.7) {
+                    leftBackDrive.setPower(leftPower/1.5);
+                    leftFrontDrive.setPower(leftPower/1.5);
                 }
                 else {
                     leftBackDrive.setPower(leftPower/2);
                     leftFrontDrive.setPower(leftPower/2);
                 }
-                if(gamepad1.right_stick_y>0.5) {
-                    rightBackDrive.setPower(rightPower);
-                    rightFrontDrive.setPower(rightPower);
+                if(gamepad1.right_stick_y>0.7||gamepad1.right_stick_y<-0.7) {
+                    rightBackDrive.setPower(rightPower/1.5);
+                    rightFrontDrive.setPower(rightPower/1.5);
                 }
                 else {
                     rightBackDrive.setPower(rightPower/2);
                     rightFrontDrive.setPower(rightPower/2);
                 }
 
-                if(gamepad1.left_bumper) //making small adjustments... 
+                if(gamepad1.left_stick_button) //making small adjustments...
                     leftPower = 0.1;
 
-                if(gamepad1.right_bumper)
+                if(gamepad1.right_stick_button)
                     rightPower = 0.1;
 
             }
 
             //else if one of the triggers are being pushed (meaning "crab" mode), then send the calculated velocities/powers to the wheels to replicate "crab" mode for the robot
             else if (triggerPowerLeft > 0 || triggerPowerRight > 0) {
-                leftBackDrive.setPower(moveLeftPower);
-                rightBackDrive.setPower(-moveRightPower);
-                leftFrontDrive.setPower(-moveLeftPower);
-                rightFrontDrive.setPower(moveRightPower);
+                leftBackDrive.setPower(-moveLeftPower);
+                rightBackDrive.setPower(moveRightPower);
+                leftFrontDrive.setPower(moveLeftPower);
+                rightFrontDrive.setPower(-moveRightPower);
             }
 
             //this is the part of the code that deals with the crane
-            if(gamepad2.y) { //press y, it goes up. press a, it goes down. it's so much harder than it sounds
-                craneElevate.setTargetPosition(2000);
-                while(craneElevate.getCurrentPosition()<2000)
-                    cranePitch.setPower(0.35); //makes the crane match it
-                craneElevate.setPower(1);
+            if(gamepad2.left_stick_y>0) {
+                craneElevate.setPower(gamepad2.left_stick_y);
+                cranePitch.setPower(gamepad2.left_stick_y*0.4);
             }
-            else
-            {
+            else if(gamepad2.left_stick_y<0) {
+                craneElevate.setPower(gamepad2.left_stick_y);
+                cranePitch.setPower(gamepad2.left_stick_y*0.05);
+            }
+            else if(gamepad2.left_stick_y==0) {
                 craneElevate.setPower(0);
-            }
-            if(gamepad2.a) {
-                craneElevate.setTargetPosition(0);
-                while(craneElevate.getCurrentPosition()>0)
-                    craneElevate.setPower(-0.5);
-                cranePitch.setPower(0.05); //yeah, its goes down real fast
-            }
-            else
-            {
-                craneElevate.setPower(0);
-            }
-
-            if(triggerPowerRight2==0) { //Tray grabber (goes 0 to 20 (actually 18) )
-                trayGrabPos = 0;
-                trayGrab.setPosition(trayGrabPos);
-            }
-            else if(triggerPowerRight2>0) {
-                trayGrabPos = 0.1;
-                trayGrab.setPosition(trayGrabPos);
-            }
-
-            if(triggerPowerLeft2==0) { //Crane grabber (goes 0 to 90)
-                craneGrabPos = 0.5;
-                craneGrab.setPosition(craneGrabPos);
                 cranePitch.setPower(-cranePitchPower);
             }
-            else if(triggerPowerLeft2>0) {
-                craneGrabPos = 0;
+
+            if(triggerPowerLeft2==1) { //Crane grabber (goes 0 to 90)
+                craneGrabPos = 0.5;
+                cranePowerToggle=true;
                 craneGrab.setPosition(craneGrabPos);
-                if(gamepad2.right_stick_y!=0) //Adds a bit of power to keep the crane stable
-                {
-                    cranePitch.setPower(-cranePitchPower);
-                }
-                else
-                {
-                    cranePitch.setPower(0.02);
-                }
+            }
+            else if(gamepad2.left_bumper==true) {
+                craneGrabPos = 0;
+                cranePowerToggle=false;
+                craneGrab.setPosition(craneGrabPos);
+            }
+            if(cranePowerToggle==true && gamepad2.left_stick_y==0 && gamepad2.right_stick_y==0) { //Adds a bit of power to counteract the block
+                cranePitch.setPower(0.05);
             }
 
-            //However, for testing purposes and emergency purposes there will be a needed part to the code: 
-            if(gamepad2.left_trigger==1 && gamepad2.right_trigger==1) //The Debug Menu! press both triggers to enter
-            {
-                //craneElevate.setPower(gamepad2.left_stick_y); //spools up the pulley if needed for emergencies
-                cranePitch.setPower(-gamepad2.right_stick_y);
+            if(gamepad2.y) { //Extends the crane arm
+                craneExtend.setPower(-1);
+            }
+            else if(gamepad2.a) {
+                craneExtend.setPower(1);
+            }
+            else
+                craneExtend.setPower(0);
+
+            if(triggerPowerRight2==1) { //Tray grabber (goes 0 to 90)
+                trayGrabPos = 0.5;
+                trayGrab.setPosition(trayGrabPos);
+            }
+            else if(gamepad2.right_bumper==true) {
+                trayGrabPos = 0;
+                trayGrab.setPosition(trayGrabPos);
             }
 
             //Shows the elapsed game time and other data on the android device.
