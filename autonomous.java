@@ -42,10 +42,10 @@ import com.qualcomm.robotcore.util.Range;
 
 
 @Autonomous(name="autonomousLeft", group="Iterative Opmode")
-//@Disabled
-public class autonomousBlueSquare extends OpMode
+//@Disabled //you shouldn't touch this
+public class autonomous extends OpMode
 {
-    // Declare OpMode members.
+    //Declaring OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftBackDrive;
     private DcMotor rightBackDrive;
@@ -56,11 +56,8 @@ public class autonomousBlueSquare extends OpMode
     private double forwardsPower;
     private Servo trayGrab;
 
-    //Code to run ONCE when the driver hits INIT
-
     @Override
-    public void init() {
-        telemetry.addData("Status", "Initialized");
+    public void init() { //Runs once when robot is initialized
 
         //The below lines of code initialize the hardware variables to be used later on (such as motors and servos)
         leftBackDrive  = hardwareMap.get(DcMotor.class, "left_back_drive");
@@ -74,20 +71,20 @@ public class autonomousBlueSquare extends OpMode
         rightBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        
+
         leftBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         leftFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        
+
         leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         leftFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        
+
         //sets up the gyroscope
         //gyro = hardwareMap.get();
-        
+
         //Sets motor direction
         leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
@@ -98,75 +95,95 @@ public class autonomousBlueSquare extends OpMode
         telemetry.addData("Status", "Initialized");
     }
 
-    //CRAB LEFT AND CRAB RIGHT
-    public void crab(int pulses, String direction) {
-        int wheelPosition = pulses;
-        if (direction == "right") {
-            leftBackDrive.setTargetPosition(wheelPosition);
-            rightBackDrive.setTargetPosition(wheelPosition);
-            leftFrontDrive.setTargetPosition(-wheelPosition);
-            rightFrontDrive.setTargetPosition(-wheelPosition);
-        } else if (direction == "left") {
-            leftBackDrive.setTargetPosition(-wheelPosition);
-            rightBackDrive.setTargetPosition(-wheelPosition);
-            leftFrontDrive.setTargetPosition(wheelPosition);
-            rightFrontDrive.setTargetPosition(wheelPosition);
-        }
-    }
+    //These functions allow easier programming of automonous modes...
 
-    public void move(int pulses, String direction) {
+    public void move(int pulses, String direction) { //moving forwards/backwards [pulse] pulses
         int wheelPosition = pulses;
-        if (direction == "forward") {
-            while(pulses>leftBackDrive.getCurrentPosition()) {
-            leftBackDrive.setTargetPosition(wheelPosition);
-            rightBackDrive.setTargetPosition(-wheelPosition);
-            leftFrontDrive.setTargetPosition(wheelPosition);
-            rightFrontDrive.setTargetPosition(-wheelPosition);
+        if (direction == "forward") { //go forward
+            while(pulses>leftBackDrive.getCurrentPosition()) { //Keep in mind that leftbackdrive is a test variable until we get encoder wheels
+                leftBackDrive.setTargetPosition(wheelPosition);
+                rightBackDrive.setTargetPosition(-wheelPosition);
+                leftFrontDrive.setTargetPosition(wheelPosition);
+                rightFrontDrive.setTargetPosition(-wheelPosition);
             }
         }
-        else if (direction == "backwards") {
-            leftBackDrive.setTargetPosition(-wheelPosition);
-            rightBackDrive.setTargetPosition(-wheelPosition);
-            leftFrontDrive.setTargetPosition(-wheelPosition);
-            rightFrontDrive.setTargetPosition(-wheelPosition);
+        else if (direction == "backwards") { //go backwards
+            while(pulses>leftBackDrive.getCurrentPosition()) {
+                leftBackDrive.setTargetPosition(-wheelPosition);
+                rightBackDrive.setTargetPosition(wheelPosition);
+                leftFrontDrive.setTargetPosition(-wheelPosition);
+                rightFrontDrive.setTargetPosition(wheelPosition);
+            }
         }
     }
 
-    void setPower(double power) {
-        forwardsPower = power; //more for telemetry
+    public void crab(int pulses, String direction) { //crabbing left/right [pulse] pulses
+        int wheelPosition = pulses;
+        if (direction == "right") { //crab right
+            while(pulses>leftBackDrive.getCurrentPosition()) {
+                leftBackDrive.setTargetPosition(wheelPosition);
+                rightBackDrive.setTargetPosition(wheelPosition);
+                leftFrontDrive.setTargetPosition(-wheelPosition);
+                rightFrontDrive.setTargetPosition(-wheelPosition);
+            }
+        } else if (direction == "left") { //crab left
+            while(pulses>leftBackDrive.getCurrentPosition()) {
+                leftBackDrive.setTargetPosition(-wheelPosition);
+                rightBackDrive.setTargetPosition(-wheelPosition);
+                leftFrontDrive.setTargetPosition(wheelPosition);
+                rightFrontDrive.setTargetPosition(wheelPosition);
+            }
+        }
+    }
+
+    void setPower(double power) { //sets motor power (speed of the robot's movement)
+        forwardsPower = power;
         leftBackDrive.setPower(power);
         rightBackDrive.setPower(power);
         leftFrontDrive.setPower(power);
         rightFrontDrive.setPower(power);
     }
 
-    void setPosition(int pulses) {
+    public void turn(int pulses, String direction) { //turns the robot [pulse] pulses
+        if (direction == "right") { //turns right
+            while(pulses>leftBackDrive.getCurrentPosition()) {
+                leftBackDrive.setTargetPosition(pulses);
+                rightBackDrive.setTargetPosition(pulses);
+                leftFrontDrive.setTargetPosition(pulses);
+                rightFrontDrive.setTargetPosition(pulses);
+            }
+        } else if (direction == "left") { //turns left
+            while(pulses>leftBackDrive.getCurrentPosition()) {
+                leftBackDrive.setTargetPosition(-pulses);
+                rightBackDrive.setTargetPosition(-pulses);
+                leftFrontDrive.setTargetPosition(-pulses);
+                rightFrontDrive.setTargetPosition(-pulses);
+            }
+        }
+    }
+
+    public void tray(String position) { //brings the traygrabber up/down
+        if (position == "up"); { //traygrab up, or default position
+            trayGrab.setPosition(0);
+        }
+        else if (position == "down"); { //traygrab down
+            trayGrab.setPosition(0.5);
+        }
+    }
+
+    void setPosition(int pulses) { //used for debugging purposes
         leftBackDrive.setTargetPosition(pulses);
         rightBackDrive.setTargetPosition(pulses);
         leftFrontDrive.setTargetPosition(pulses);
         rightFrontDrive.setTargetPosition(pulses);
     }
-    
-    public void turn(String preset) { //Turns the robot 45 degrees when initiated.
-        if (preset == "right") {
-            leftBackDrive.setTargetPosition(100);
-            rightBackDrive.setTargetPosition(-100);
-            leftFrontDrive.setTargetPosition(100);
-            rightFrontDrive.setTargetPosition(-100);
-        } else if (preset == "left") {
-            leftBackDrive.setTargetPosition(-100);
-            rightBackDrive.setTargetPosition(100);
-            leftFrontDrive.setTargetPosition(-100);
-            rightFrontDrive.setTargetPosition(100);
-        }
-    }
 
-    //Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
+    //Loops when you press init
     @Override
     public void init_loop() {
     }
 
-    //Code to run ONCE when the driver hits PLAY
+    //Runs once when you press start
     @Override
     public void start() {
         setPower(0.5);
@@ -177,7 +194,7 @@ public class autonomousBlueSquare extends OpMode
         runtime.reset();
     }
 
-    //Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
+    //Loops when you press start
     @Override
     public void loop() {
 
@@ -185,5 +202,5 @@ public class autonomousBlueSquare extends OpMode
         telemetry.addData("Power", "power (%.2f)", forwardsPower);
     }
 
-    //Code to run ONCE after the driver hits STOP
+    //Runs once when you press stop
 }
