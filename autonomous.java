@@ -52,16 +52,16 @@ public class autonomous extends OpMode
     private DcMotor rightBackDrive;
     private DcMotor rightFrontDrive;
     private DcMotor leftFrontDrive;
-    private DcMotor craneExtend;
-    private DcMotor cranePitch;
-    private DcMotor craneElevate;
-    private Servo craneGrab;
-    private Servo trayGrab;
+    private DcMotor craneExtend; //the crane extender
+    private DcMotor cranePitch; //the crane pitch changer
+    private DcMotor craneElevate; //the crane elevator
+    private Servo craneGrab; //the crane grabber
+    private Servo trayGrab; //the tray grabber
     private DcMotor leftPower;
     private DcMotor rightPower;
-    private DcMotor fakeMotor;
+    private DcMotor fakeMotor; //an encoder to measure x and y coordnates
     private double forwardsPower;
-    private ColorSensor colorSensor;
+    private ColorSensor colorSensor; //the color sensor
 
     @Override
     public void init() { //Runs once when robot is initialized
@@ -117,12 +117,18 @@ public class autonomous extends OpMode
     //These functions allow easier programming of automonous modes...
 
     public void move(int pulses, double power, String direction) { //moving forwards/backwards [pulse] pulses at [power] power
-        if(direction == "forwards") { //move forwards
+        if(direction == "forwards") { //move forwards THIS IS A TEST IF STATEMENT TO SEE IF A PROBLEM WILL BE FIXED
+            //sets the initial power for moving the motors
             leftBackDrive.setPower(power);
             rightBackDrive.setPower(power);
             leftFrontDrive.setPower(power);
             rightFrontDrive.setPower(power);
-            while(pulses>craneExtend.getCurrentPosition()) {}
+            //sets the position of each motor
+            leftBackDrive.setPosition(pulses);
+            rightBackDrive.setPosition(pulses);
+            leftFrontDrive.setPosition(pulses);
+            rightFrontDrive.setPosition(pulses);
+            //resets the dc motor powers
             leftBackDrive.setPower(0);
             rightBackDrive.setPower(0);
             leftFrontDrive.setPower(0);
