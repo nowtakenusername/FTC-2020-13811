@@ -38,9 +38,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-@TeleOp(name="gamepad", group="Linear Opmode")
+@TeleOp(name="gamepadManual", group="Linear Opmode")
 //@Disabled
-public class gamepad extends LinearOpMode {
+public class gamepadManual extends LinearOpMode {
 
     //Declaring OpMode members
     private ElapsedTime runtime = new ElapsedTime();
@@ -159,7 +159,7 @@ public class gamepad extends LinearOpMode {
             }
             else if(gamepad2.left_stick_y==0) {
                 craneElevate.setPower(0);
-                cranePitch.setPower(-cranePitchPower);
+                cranePitch.setPower(cranePitchPower);
             }
 
             if(triggerPowerLeft2==1) { //Crane grabber (goes 0 to 90)
@@ -173,7 +173,7 @@ public class gamepad extends LinearOpMode {
                 craneGrab.setPosition(craneGrabPos);
             }
             if(cranePowerToggle==true && gamepad2.left_stick_y==0 && gamepad2.right_stick_y==0) { //Adds a bit of power to counteract the block
-                cranePitch.setPower(0.05);
+                cranePitch.setPower(-0.05);
             }
 
             if(gamepad2.y) { //Extends the crane arm
