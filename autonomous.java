@@ -52,16 +52,16 @@ public class autonomous extends OpMode
     private DcMotor rightBackDrive;
     private DcMotor rightFrontDrive;
     private DcMotor leftFrontDrive;
-    private DcMotor craneExtend; //the crane extender
-    private DcMotor cranePitch; //the crane pitch changer
-    private DcMotor craneElevate; //the crane elevator
-    private Servo craneGrab; //the crane grabber
-    private Servo trayGrab; //the tray grabber
+    private DcMotor craneExtend;
+    private DcMotor cranePitch;
+    private DcMotor craneElevate;
+    private Servo craneGrab;
+    private Servo trayGrab;
     private DcMotor leftPower;
     private DcMotor rightPower;
-    private DcMotor fakeMotor; //an encoder to measure x and y coordnates
+    private DcMotor fakeMotor;
     private double forwardsPower;
-    private ColorSensor colorSensor; //the color sensor
+    private ColorSensor colorSensor;
 
     @Override
     public void init() { //Runs once when robot is initialized
@@ -80,26 +80,14 @@ public class autonomous extends OpMode
         colorSensor = hardwareMap.get(ColorSensor.class, "colorSensor"); //port 0, ic2 thing
 
         //this sets each motor to be run using encoders
-        leftBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        leftFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         craneExtend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         fakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        leftBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        leftFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         craneExtend.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         fakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        leftFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        craneExtend.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        fakeMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        //craneExtend.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        //fakeMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         //sets up the gyroscope
         //gyro = hardwareMap.get();
@@ -117,33 +105,41 @@ public class autonomous extends OpMode
     //These functions allow easier programming of automonous modes...
 
     public void move(int pulses, double power, String direction) { //moving forwards/backwards [pulse] pulses at [power] power
-        if(direction == "forwards") { //move forwards THIS IS A TEST IF STATEMENT TO SEE IF A PROBLEM WILL BE FIXED
-            //sets the initial power for moving the motors
-            leftBackDrive.setPower(power);
-            rightBackDrive.setPower(power);
-            leftFrontDrive.setPower(power);
-            rightFrontDrive.setPower(power);
-            //sets the position of each motor
-            leftBackDrive.setPosition(pulses);
-            rightBackDrive.setPosition(pulses);
-            leftFrontDrive.setPosition(pulses);
-            rightFrontDrive.setPosition(pulses);
-            //resets the dc motor powers
+        if(direction == "forwards") { //move forwards {
+            leftBackDrive.setPower(-power);
+            rightBackDrive.setPower(-power);
+            leftFrontDrive.setPower(-power);
+            rightFrontDrive.setPower(-power);
+            while(-pulses<craneExtend.getCurrentPosition()) {
+                telemetry.addData("Power", "power (%.2f)", forwardsPower);
+                telemetry.addData("Encoder 1", craneExtend.getCurrentPosition());
+                telemetry.addData("Encoder 2", fakeMotor.getCurrentPosition());
+                telemetry.update();
+            }
             leftBackDrive.setPower(0);
             rightBackDrive.setPower(0);
             leftFrontDrive.setPower(0);
             rightFrontDrive.setPower(0);
+            craneExtend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            fakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         }
         else if(direction == "backwards") { //move backwards
             leftBackDrive.setPower(power);
             rightBackDrive.setPower(power);
             leftFrontDrive.setPower(power);
             rightFrontDrive.setPower(power);
-            while(-pulses<craneExtend.getCurrentPosition()) {}
+            while(pulses>craneExtend.getCurrentPosition()) {
+                telemetry.addData("Power", "power (%.2f)", forwardsPower);
+                telemetry.addData("Encoder 1", craneExtend.getCurrentPosition());
+                telemetry.addData("Encoder 2", fakeMotor.getCurrentPosition());
+                telemetry.update();
+            }
             leftBackDrive.setPower(0);
             rightBackDrive.setPower(0);
             leftFrontDrive.setPower(0);
             rightFrontDrive.setPower(0);
+            craneExtend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            fakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         }
     }
 
@@ -180,23 +176,22 @@ public class autonomous extends OpMode
         rightFrontDrive.setPower(power);
     }
 
-    public void turn(int pulses, String direction) { //turns the robot [pulse] pulses
+    /*public void turn(int pulses, String direction) { //turns the robot [pulse] pulses
         if (direction == "right") { //turns right
-            while(pulses>leftBackDrive.getCurrentPosition()) {
                 leftBackDrive.setTargetPosition(pulses);
                 rightBackDrive.setTargetPosition(pulses);
                 leftFrontDrive.setTargetPosition(pulses);
                 rightFrontDrive.setTargetPosition(pulses);
-            }
+
         } else if (direction == "left") { //turns left
-            while(pulses>leftBackDrive.getCurrentPosition()) {
+
                 leftBackDrive.setTargetPosition(-pulses);
                 rightBackDrive.setTargetPosition(-pulses);
                 leftFrontDrive.setTargetPosition(-pulses);
                 rightFrontDrive.setTargetPosition(-pulses);
             }
-        }
-    }
+        }*/
+
 
     public void tray(String position) { //brings the traygrabber up/down
         if (position == "up"); { //traygrab up, or default position
@@ -222,7 +217,12 @@ public class autonomous extends OpMode
     //Runs once when you press start
     @Override
     public void start() {
-        move(360, 0.5, "forwards");
+        move(1000, 0.5, "forwards");
+
+        craneExtend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        fakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        move(1000, 0.5, "backwards");
+
         craneExtend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         fakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         runtime.reset();
@@ -231,6 +231,7 @@ public class autonomous extends OpMode
     //Loops when you press start
     @Override
     public void loop() {
+        //move(360, 0.25, "forwards");
 
         // Show the elapsed game time and wheel power.
         telemetry.addData("Power", "power (%.2f)", forwardsPower);
