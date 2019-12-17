@@ -54,9 +54,7 @@ public class gamepad extends LinearOpMode {
     private DcMotor craneElevate;
     private Servo craneGrab;
     private Servo trayGrab;
-
-
-
+    private Servo craneAttitude;
 
     public void runOpMode() {
 
@@ -71,6 +69,12 @@ public class gamepad extends LinearOpMode {
         craneGrab = hardwareMap.get(Servo.class, "craneGrab"); //port 0, servo
         trayGrab = hardwareMap.get(Servo.class, "trayGrab"); //port 1, servo
 
+        craneElevate.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        //craneElevate.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        craneElevate.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
         //Setting the motor directions
         leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
@@ -79,7 +83,8 @@ public class gamepad extends LinearOpMode {
 
         //Initialize some picky variables
         boolean cranePowerToggle = false;
-
+        double runtimeWait = 0;
+        int craneElevatePulses = 0;
 
         telemetry.addData("Status", "Initialized");
         telemetry.update(); //Done "initalizing"
@@ -105,8 +110,9 @@ public class gamepad extends LinearOpMode {
             double craneElevatePower;
             double craneGrabPos = 0;
             double trayGrabPos = 0;
+            double craneAttitudePos = 0;
 
-            //the below variables are containing the value of the gamepad joysticks and other buttons as they are being pressed/moved through each loop
+            //the below variables contain the value of the gamepad joysticks and other buttons as they are being pressed/moved through each loop
             //these are the variables for the left and right wheels
             leftPower  = gamepad1.left_stick_y;
             rightPower = gamepad1.right_stick_y;
@@ -125,8 +131,8 @@ public class gamepad extends LinearOpMode {
 
             // Send calculated power to wheels
             //if both of the triggers on the gamepad are not being pulled, then send the calculated velocities/powers to the wheels to replicate "tank" mode for the robot
-            if (triggerPowerLeft == 0 && triggerPowerRight == 0) {
-                if(gamepad1.left_stick_y>0.7||gamepad1.left_stick_y<-0.7) {
+            if (triggerPowerLeft==0 && triggerPowerRight==0) {
+                if(gamepad1.left_stick_y>0.7 || gamepad1.left_stick_y<-0.7) {
                     leftBackDrive.setPower(leftPower/1.5);
                     leftFrontDrive.setPower(leftPower/1.5);
                 }
@@ -134,7 +140,7 @@ public class gamepad extends LinearOpMode {
                     leftBackDrive.setPower(leftPower/2);
                     leftFrontDrive.setPower(leftPower/2);
                 }
-                if(gamepad1.right_stick_y>0.7||gamepad1.right_stick_y<-0.7) {
+                if(gamepad1.right_stick_y>0.7 || gamepad1.right_stick_y<-0.7) {
                     rightBackDrive.setPower(rightPower/1.5);
                     rightFrontDrive.setPower(rightPower/1.5);
                 }
@@ -142,17 +148,10 @@ public class gamepad extends LinearOpMode {
                     rightBackDrive.setPower(rightPower/2);
                     rightFrontDrive.setPower(rightPower/2);
                 }
-
-                if(gamepad1.left_stick_button) //making small adjustments...
-                    leftPower = 0.1;
-
-                if(gamepad1.right_stick_button)
-                    rightPower = 0.1;
-
             }
 
             //else if one of the triggers are being pushed (meaning "crab" mode), then send the calculated velocities/powers to the wheels to replicate "crab" mode for the robot
-            else if (triggerPowerLeft > 0 || triggerPowerRight > 0) {
+            else if (triggerPowerLeft>0 || triggerPowerRight>0) {
                 leftBackDrive.setPower(-moveLeftPower);
                 rightBackDrive.setPower(moveRightPower);
                 leftFrontDrive.setPower(moveLeftPower);
@@ -160,7 +159,7 @@ public class gamepad extends LinearOpMode {
             }
 
             //this is the part of the code that deals with the crane
-            if(gamepad2.left_stick_y>0) {
+            /*if(gamepad2.left_stick_y>0) {
                 craneElevate.setPower(gamepad2.left_stick_y);
                 cranePitch.setPower(gamepad2.left_stick_y*0.4);
             }
@@ -170,7 +169,26 @@ public class gamepad extends LinearOpMode {
             }
             else if(gamepad2.left_stick_y==0) {
                 craneElevate.setPower(0);
-                cranePitch.setPower(-cranePitchPower);
+                cranePitch.setPower(cranePitchPower);
+            }*/
+            if(gamepad2.dpad_down==true && runtimeWait<=runtime.seconds()) {
+                craneElevatePulses+=70;
+                craneElevate.setTargetPosition(craneElevatePulses);
+                craneElevate.setPower(0.2);
+                runtimeWait=runtime.seconds()+0.5;
+            }
+            else if(gamepad2.dpad_up==true && runtimeWait<=runtime.seconds()) {
+                craneElevatePulses-=70;
+                craneElevate.setTargetPosition(craneElevatePulses);
+                craneElevate.setPower(-0.7);
+                runtimeWait=runtime.seconds()+0.5;
+            }
+
+            if(gamepad2.right_stick_y!=0) {
+                cranePitch.setPower(cranePitchPower);
+            }
+            else {
+                cranePitch.setPower(0);
             }
 
             if(triggerPowerLeft2==1) { //Crane grabber (goes 0 to 90)
@@ -184,7 +202,16 @@ public class gamepad extends LinearOpMode {
                 craneGrab.setPosition(craneGrabPos);
             }
             if(cranePowerToggle==true && gamepad2.left_stick_y==0 && gamepad2.right_stick_y==0) { //Adds a bit of power to counteract the block
-                cranePitch.setPower(0.05);
+                cranePitch.setPower(-0.05);
+            }
+
+            if(gamepad2.dpad_left==true) {
+                craneAttitudePos = 0;
+                craneAttitude.setPosition(craneAttitudePos);
+            }
+            if(gamepad2.dpad_right==true) {
+                craneAttitudePos = 0.5;
+                craneAttitude.setPosition(craneAttitudePos);
             }
 
             if(gamepad2.y) { //Extends the crane arm
@@ -210,8 +237,8 @@ public class gamepad extends LinearOpMode {
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
             telemetry.addData("CrabMotors", "left (%.2f), right (%.2f)", moveLeftPower, moveRightPower);
             telemetry.addData("Crane Motors", "craneExtend (%.2f), cranePitch (%.2f)", craneExtendPower, cranePitchPower);
-            telemetry.addData("Crane Position", craneElevate.getCurrentPosition());
             telemetry.addData("Grabbers", "craneGrab (%.2f), trayGrab (%.2f)", craneGrabPos, trayGrabPos);
+            telemetry.addData("Waiter thing", "" + runtimeWait);
             telemetry.update();
         }
     }
