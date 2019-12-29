@@ -70,11 +70,11 @@ public class gamepad extends LinearOpMode {
         trayGrab = hardwareMap.get(Servo.class, "trayGrab"); //port 1, servo
 
         craneElevate.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        //craneElevate.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
+        cranePitch.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        
         craneElevate.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
+        cranePitch.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        
         //Setting the motor directions
         leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
@@ -85,6 +85,7 @@ public class gamepad extends LinearOpMode {
         boolean cranePowerToggle = false;
         double runtimeWait = 0;
         int craneElevatePulses = 0;
+        int craneSetting = 1;
 
         telemetry.addData("Status", "Initialized");
         telemetry.update(); //Done "initalizing"
@@ -129,9 +130,7 @@ public class gamepad extends LinearOpMode {
             craneExtendPower = gamepad2.left_stick_y;
             cranePitchPower = gamepad2.right_stick_y;
 
-            // Send calculated power to wheels
-            //if both of the triggers on the gamepad are not being pulled, then send the calculated velocities/powers to the wheels to replicate "tank" mode for the robot
-            if (triggerPowerLeft==0 && triggerPowerRight==0) {
+            if (triggerPowerLeft==0 && triggerPowerRight==0) { //tank mode
                 if(gamepad1.left_stick_y>0.7 || gamepad1.left_stick_y<-0.7) {
                     leftBackDrive.setPower(leftPower/1.5);
                     leftFrontDrive.setPower(leftPower/1.5);
@@ -150,45 +149,56 @@ public class gamepad extends LinearOpMode {
                 }
             }
 
-            //else if one of the triggers are being pushed (meaning "crab" mode), then send the calculated velocities/powers to the wheels to replicate "crab" mode for the robot
-            else if (triggerPowerLeft>0 || triggerPowerRight>0) {
+            
+            else if (triggerPowerLeft>0 || triggerPowerRight>0) { //crab mode
                 leftBackDrive.setPower(-moveLeftPower);
                 rightBackDrive.setPower(moveRightPower);
                 leftFrontDrive.setPower(moveLeftPower);
                 rightFrontDrive.setPower(-moveRightPower);
             }
 
-            //this is the part of the code that deals with the crane
-            /*if(gamepad2.left_stick_y>0) {
-                craneElevate.setPower(gamepad2.left_stick_y);
-                cranePitch.setPower(gamepad2.left_stick_y*0.4);
-            }
-            else if(gamepad2.left_stick_y<0) {
-                craneElevate.setPower(gamepad2.left_stick_y);
-                cranePitch.setPower(gamepad2.left_stick_y*0.05);
-            }
-            else if(gamepad2.left_stick_y==0) {
-                craneElevate.setPower(0);
-                cranePitch.setPower(cranePitchPower);
-            }*/
-            if(gamepad2.dpad_down==true && runtimeWait<=runtime.seconds()) {
-                craneElevatePulses+=70;
-                craneElevate.setTargetPosition(craneElevatePulses);
-                craneElevate.setPower(0.2);
-                runtimeWait=runtime.seconds()+0.5;
-            }
-            else if(gamepad2.dpad_up==true && runtimeWait<=runtime.seconds()) {
-                craneElevatePulses-=70;
-                craneElevate.setTargetPosition(craneElevatePulses);
-                craneElevate.setPower(-0.7);
-                runtimeWait=runtime.seconds()+0.5;
-            }
 
-            if(gamepad2.right_stick_y!=0) {
-                cranePitch.setPower(cranePitchPower);
+            if(gamepad2.dpad_down==true && runtimeWait<=runtime.seconds() && craneSetting > 1) { //sets the automated crane setting down by one
+                craneSetting -= 1;
+                runtimeWait=runtime.seconds()+0.5;
             }
-            else {
-                cranePitch.setPower(0);
+            else if(gamepad2.dpad_up==true && runtimeWait<=runtime.seconds() && craneSetting < 12) { //sets the automated crane setting up by one
+                craneSetting += 1; 
+                runtimeWait=runtime.seconds()+0.5;
+            }
+            
+            if(craneSetting == 1) { //LOWEST
+                
+            }
+            if(craneSetting == 2) {
+                
+            }
+            if(craneSetting == 3) {
+                
+            }
+            if(craneSetting == 4) {
+                
+            }
+            if(craneSetting == 5) {
+                
+            }
+            if(craneSetting == 6) {
+                
+            }
+            if(craneSetting == 7) {
+                
+            }
+            if(craneSetting == 8) {
+                
+            }
+            if(craneSetting == 10) {
+                
+            }
+            if(craneSetting == 11) {
+                
+            }
+            if(craneSetting == 12) { //HIGHEST
+                
             }
 
             if(triggerPowerLeft2==1) { //Crane grabber (goes 0 to 90)
@@ -201,10 +211,10 @@ public class gamepad extends LinearOpMode {
                 cranePowerToggle=false;
                 craneGrab.setPosition(craneGrabPos);
             }
-            if(cranePowerToggle==true && gamepad2.left_stick_y==0 && gamepad2.right_stick_y==0) { //Adds a bit of power to counteract the block
+            if(cranePowerToggle==true && gamepad2.left_stick_y==0 && gamepad2.right_stick_y==0) { //adds a bit of power to counteract the block
                 cranePitch.setPower(-0.05);
             }
-
+            
             if(gamepad2.dpad_left==true) {
                 craneAttitudePos = 0;
                 craneAttitude.setPosition(craneAttitudePos);
@@ -213,7 +223,7 @@ public class gamepad extends LinearOpMode {
                 craneAttitudePos = 0.5;
                 craneAttitude.setPosition(craneAttitudePos);
             }
-
+            
             if(gamepad2.y) { //Extends the crane arm
                 craneExtend.setPower(-1);
             }
@@ -239,7 +249,10 @@ public class gamepad extends LinearOpMode {
             telemetry.addData("Crane Motors", "craneExtend (%.2f), cranePitch (%.2f)", craneExtendPower, cranePitchPower);
             telemetry.addData("Grabbers", "craneGrab (%.2f), trayGrab (%.2f)", craneGrabPos, trayGrabPos);
             telemetry.addData("Waiter thing", "" + runtimeWait);
+            telemetry.addData("Crane Setting", "" + craneSetting);
             telemetry.update();
         }
+        craneElevate.setTargetPosition(0);
+        cranePitch.setTargetPosition(0);
     }
 }
