@@ -54,11 +54,14 @@ public class gamepad extends LinearOpMode {
     private DcMotor craneElevate;
     private Servo craneGrab;
     private Servo trayGrab;
-    private Servo craneAttitude;
+    private Servo craneGrabAttitude;
 
     public void runOpMode() {
+        
+//******************************************************************************
 
-        //Initalize the motors, servos, to their ports
+        //Initial setup
+        //Initialize the motors, servos, to their ports
         leftBackDrive  = hardwareMap.get(DcMotor.class, "left_back_drive"); //port 0, hub1
         rightBackDrive = hardwareMap.get(DcMotor.class, "right_back_drive"); //port 1, hub1
         leftFrontDrive = hardwareMap.get(DcMotor.class, "left_front_drive"); //port 2, hub1
@@ -68,10 +71,12 @@ public class gamepad extends LinearOpMode {
         craneElevate = hardwareMap.get(DcMotor.class, "craneElevate"); //port 2, hub2
         craneGrab = hardwareMap.get(Servo.class, "craneGrab"); //port 0, servo
         trayGrab = hardwareMap.get(Servo.class, "trayGrab"); //port 1, servo
-
+        
+        //Zeroes out encoders
         craneElevate.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         cranePitch.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         
+        //Sets motors to run to [pulses] encoder pulses
         craneElevate.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         cranePitch.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         
@@ -81,149 +86,96 @@ public class gamepad extends LinearOpMode {
         leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
 
-        //Initialize some picky variables
-        boolean cranePowerToggle = false;
+        //Initializing some picky variables
         double runtimeWait = 0;
         int craneElevatePulses = 0;
-        int craneSetting = 1;
+          int craneSetting = 1; //Starting barely not scraping the ground
+        //int craneSetting = 0; //Starting in compact mode
 
         telemetry.addData("Status", "Initialized");
-        telemetry.update(); //Done "initalizing"
+        telemetry.update(); //Done initalizing
 
-        // Wait for the game to start (driver presses PLAY)
+        //Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
 
-        // run until the end of the match (driver presses STOP)
+        //run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
+            
+//******************************************************************************
+            
+            //Variable setup
+            //Setting up variables - many are redundant and are pending removal
+            double leftPower; //Tank movement left wheels [pending removal]
+            double rightPower; //Tank movement right wheels [pending removal]
+            double moveLeftPower; //Crab movement leftwards [pending removal]
+            double moveRightPower; //Crab movement rightwards [pending removal]
+            double triggerPowerLeft; //Gamepad 1 left trigger power [pending removal]
+            double triggerPowerRight; //Gamepad 1 right trigger power [pending removal]
+            double triggerPowerRight2; //Gamepad 2 right trigger power [pending removal]
+            double triggerPowerLeft2; //Gamepad 2 left trigger power [pending removal]
+            double craneExtendPower; //Crane linear actuator motor power
+            double cranePitchPower; //Crane pitch motor power
+            double craneElevatePower; //Crane lift motor power
+            double craneGrabPos = 0; //Grabber claw servo position
+            double trayGrabPos = 0; //Tray grabber servo position
+            double craneGrabAttitudePos = 0; //Grabber attitude servo position
+            double cranePosOffset = 0; //(un)used to offset future values if starting at craneSetting 0
 
-            // Setup a variable for each drive wheel to save power level for telemetry
-            double leftPower;
-            double rightPower;
-            double moveLeftPower;
-            double moveRightPower;
-            double triggerPowerLeft;
-            double triggerPowerRight;
-            double triggerPowerRight2;
-            double triggerPowerLeft2;
-            double craneExtendPower;
-            double cranePitchPower;
-            double craneElevatePower;
-            double craneGrabPos = 0;
-            double trayGrabPos = 0;
-            double craneAttitudePos = 0;
-
-            //the below variables contain the value of the gamepad joysticks and other buttons as they are being pressed/moved through each loop
-            //these are the variables for the left and right wheels
+            //The below variables contain the value of the gamepad joysticks and other buttons as they are being pressed/moved through each loop 
+            //All are repetitive and will be removed alongside other pending removals and replaced with their gamepad counterparts for simplicity's sake
+            //These are the variables for the left and right wheels
             leftPower  = gamepad1.left_stick_y;
             rightPower = gamepad1.right_stick_y;
             //these are the variables for the crab-like movement of the mechanum wheels
             moveLeftPower = -gamepad1.left_stick_x;
             moveRightPower = -gamepad1.left_stick_x;
-            //these are the variables for the triggers on the gamepad, if pressed the robot will go to "crab mode"
+            //These are the variables for the triggers on the gamepad, if pressed the robot will go to "crab mode"
             triggerPowerLeft = gamepad1.left_trigger;
             triggerPowerRight = gamepad1.right_trigger;
             //these are the variables for the triggers on the gamepad, utilised for the crane's grasper and the tray clip
             triggerPowerLeft2 = gamepad2.left_trigger;
             triggerPowerRight2 = gamepad2.right_trigger;
-            //these are the power variables for the crane
+            //These are the power variables for the crane
             craneExtendPower = gamepad2.left_stick_y;
             cranePitchPower = gamepad2.right_stick_y;
 
-            if (triggerPowerLeft==0 && triggerPowerRight==0) { //tank mode
+//******************************************************************************
+
+            //Drive controls
+            //Tank mode, the gnarly if elses allow finer tuning of robot movement
+            if (gamepad1.left_trigger==0 && gamepad1.right_trigger==0) {
                 if(gamepad1.left_stick_y>0.7 || gamepad1.left_stick_y<-0.7) {
-                    leftBackDrive.setPower(leftPower/1.5);
+                    leftBackDrive.setPower(leftPower/1.5); //Full throttle
                     leftFrontDrive.setPower(leftPower/1.5);
                 }
                 else {
-                    leftBackDrive.setPower(leftPower/2);
+                    leftBackDrive.setPower(leftPower/2); //Adjustment throttle
                     leftFrontDrive.setPower(leftPower/2);
                 }
                 if(gamepad1.right_stick_y>0.7 || gamepad1.right_stick_y<-0.7) {
-                    rightBackDrive.setPower(rightPower/1.5);
+                    rightBackDrive.setPower(rightPower/1.5); //Full throttle
                     rightFrontDrive.setPower(rightPower/1.5);
                 }
                 else {
-                    rightBackDrive.setPower(rightPower/2);
+                    rightBackDrive.setPower(rightPower/2); //Adjustment throttle
                     rightFrontDrive.setPower(rightPower/2);
                 }
             }
 
-            
-            else if (triggerPowerLeft>0 || triggerPowerRight>0) { //crab mode
+            //Crab mode
+            //As crab mode is fairly power intensive there are no limits for the time being
+            else if (triggerPowerLeft>0 || triggerPowerRight>0) {
                 leftBackDrive.setPower(-moveLeftPower);
                 rightBackDrive.setPower(moveRightPower);
                 leftFrontDrive.setPower(moveLeftPower);
                 rightFrontDrive.setPower(-moveRightPower);
             }
-
-
-            if(gamepad2.dpad_down==true && runtimeWait<=runtime.seconds() && craneSetting > 1) { //sets the automated crane setting down by one
-                craneSetting -= 1;
-                runtimeWait=runtime.seconds()+0.5;
-            }
-            else if(gamepad2.dpad_up==true && runtimeWait<=runtime.seconds() && craneSetting < 12) { //sets the automated crane setting up by one
-                craneSetting += 1; 
-                runtimeWait=runtime.seconds()+0.5;
-            }
             
-            if(craneSetting == 1) { //LOWEST
-                
-            }
-            if(craneSetting == 2) {
-                
-            }
-            if(craneSetting == 3) {
-                
-            }
-            if(craneSetting == 4) {
-                
-            }
-            if(craneSetting == 5) {
-                
-            }
-            if(craneSetting == 6) {
-                
-            }
-            if(craneSetting == 7) {
-                
-            }
-            if(craneSetting == 8) {
-                
-            }
-            if(craneSetting == 10) {
-                
-            }
-            if(craneSetting == 11) {
-                
-            }
-            if(craneSetting == 12) { //HIGHEST
-                
-            }
+//******************************************************************************
 
-            if(triggerPowerLeft2==1) { //Crane grabber (goes 0 to 90)
-                craneGrabPos = 0.5;
-                cranePowerToggle=true;
-                craneGrab.setPosition(craneGrabPos);
-            }
-            else if(gamepad2.left_bumper==true) {
-                craneGrabPos = 0;
-                cranePowerToggle=false;
-                craneGrab.setPosition(craneGrabPos);
-            }
-            if(cranePowerToggle==true && gamepad2.left_stick_y==0 && gamepad2.right_stick_y==0) { //adds a bit of power to counteract the block
-                cranePitch.setPower(-0.05);
-            }
-            
-            if(gamepad2.dpad_left==true) {
-                craneAttitudePos = 0;
-                craneAttitude.setPosition(craneAttitudePos);
-            }
-            if(gamepad2.dpad_right==true) {
-                craneAttitudePos = 0.5;
-                craneAttitude.setPosition(craneAttitudePos);
-            }
-            
+            //Crane control
+            //Runs the linear actuator
             if(gamepad2.y) { //Extends the crane arm
                 craneExtend.setPower(-1);
             }
@@ -233,16 +185,103 @@ public class gamepad extends LinearOpMode {
             else
                 craneExtend.setPower(0);
 
-            if(triggerPowerRight2==1) { //Tray grabber (goes 0 to 90)
+            //sets the automated crane setting down by one
+            if(gamepad2.dpad_down==true && runtimeWait<=runtime.seconds() && craneSetting > 0) { 
+                craneSetting -= 1; 
+                craneElevate.setPower(0.2);
+                cranePitch.setPower(0.2);
+                runtimeWait=runtime.seconds()+0.25; //Sets a timer for .25 seconds until it can go down another setting
+            }
+            //sets the automated crane setting up by one
+            else if(gamepad2.dpad_up==true && runtimeWait<=runtime.seconds() && craneSetting < 12) { 
+                craneSetting += 1; 
+                craneElevate.setPower(0.5);
+                cranePitch.setPower(0.8);
+                runtimeWait=runtime.seconds()+0.25; //Sets a timer for .25 seconds until it can go up another setting
+            }
+            
+            //Crane setting positions
+            if(craneSetting == 0) { //COMPACT MODE
+                craneElevate.setTargetPosition(0);
+                cranePitch.setTargetPosition(0);
+            }
+            if(craneSetting == 1) { //LOWEST
+                craneElevate.setTargetPosition(0);
+                cranePitch.setTargetPosition(0);
+            }
+            if(craneSetting == 2) {
+                craneElevate.setTargetPosition(0);
+                cranePitch.setTargetPosition(50);
+            }
+            if(craneSetting == 3) {
+                craneElevate.setTargetPosition(0);
+                cranePitch.setTargetPosition(140);
+            }
+            if(craneSetting == 4) {
+                craneElevate.setTargetPosition(0);
+                cranePitch.setTargetPosition(280);
+            }
+            if(craneSetting == 5) {
+                craneElevate.setTargetPosition(0);
+                cranePitch.setTargetPosition(420);
+            }
+            if(craneSetting == 6) {
+                craneElevate.setTargetPosition(180);
+                cranePitch.setTargetPosition(280);
+            }
+            if(craneSetting == 7) {
+                craneElevate.setTargetPosition(180);
+                cranePitch.setTargetPosition(0);
+            }
+            if(craneSetting == 8) {
+                craneElevate.setTargetPosition(0);
+                cranePitch.setTargetPosition(0);
+            }
+            if(craneSetting == 10) {
+                craneElevate.setTargetPosition(0);
+                cranePitch.setTargetPosition(0);
+            }
+            if(craneSetting == 11) {
+                craneElevate.setTargetPosition(0);
+                cranePitch.setTargetPosition(0);
+            }
+            if(craneSetting == 12) { //HIGHEST
+                craneElevate.setTargetPosition(0);
+                cranePitch.setTargetPosition(0);
+            }
+            
+//******************************************************************************
+            
+            //Servo control
+            //Crane grabber
+            if(triggerPowerLeft2==1) { 
+                craneGrab.setPosition(0.5);
+            }
+            else if(gamepad2.left_bumper==true) {
+                craneGrab.setPosition(0);
+            }
+            
+            //Crane grabber attitude 
+            if(gamepad2.dpad_left==true) {
+                craneGrabAttitude.setPosition(0);
+            }
+            if(gamepad2.dpad_right==true) {
+                craneGrabAttitude.setPosition(0.5);
+            }
+            
+            //Tray grabber
+            if(triggerPowerRight2==1) {
                 trayGrabPos = 0.5;
-                trayGrab.setPosition(trayGrabPos);
+                trayGrab.setPosition(0.5);
             }
             else if(gamepad2.right_bumper==true) {
                 trayGrabPos = 0;
-                trayGrab.setPosition(trayGrabPos);
+                trayGrab.setPosition(0);
             }
 
-            //Shows the elapsed game time and other data on the android device.
+//******************************************************************************
+
+            //Telemetry display
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
             telemetry.addData("CrabMotors", "left (%.2f), right (%.2f)", moveLeftPower, moveRightPower);
@@ -252,6 +291,7 @@ public class gamepad extends LinearOpMode {
             telemetry.addData("Crane Setting", "" + craneSetting);
             telemetry.update();
         }
+        //Runs to put the robot down to default state
         craneElevate.setTargetPosition(0);
         cranePitch.setTargetPosition(0);
     }
