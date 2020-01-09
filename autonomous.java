@@ -31,6 +31,7 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
 
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -82,15 +83,9 @@ public class autonomous extends OpMode
         //this sets each motor to be run using encoders
         craneExtend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         fakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
+        
         craneExtend.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         fakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        //craneExtend.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        //fakeMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        //sets up the gyroscope
-        //gyro = hardwareMap.get();
 
         //Sets motor direction
         leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
@@ -104,13 +99,14 @@ public class autonomous extends OpMode
 
     //These functions allow easier programming of automonous modes...
 
-    public void move(int pulses, double power, String direction) { //moving forwards/backwards [pulse] pulses at [power] power
+    public void move(int pulses, double power, String direction, double timeout) { //moving forwards/backwards [pulse] pulses at [power] power
+        double moveStart = runtime.seconds();
         if(direction == "forwards") { //move forwards {
             leftBackDrive.setPower(-power);
             rightBackDrive.setPower(-power);
             leftFrontDrive.setPower(-power);
             rightFrontDrive.setPower(-power);
-            while(-pulses<craneExtend.getCurrentPosition()) {
+            while(-pulses<craneExtend.getCurrentPosition() && timeout+moveStart > runtime.seconds()) {
                 telemetry.addData("Power", "power (%.2f)", forwardsPower);
                 telemetry.addData("Encoder 1", craneExtend.getCurrentPosition());
                 telemetry.addData("Encoder 2", fakeMotor.getCurrentPosition());
@@ -128,7 +124,7 @@ public class autonomous extends OpMode
             rightBackDrive.setPower(power);
             leftFrontDrive.setPower(power);
             rightFrontDrive.setPower(power);
-            while(pulses>craneExtend.getCurrentPosition()) {
+            while(pulses>craneExtend.getCurrentPosition() && timeout+moveStart > runtime.seconds()) {
                 telemetry.addData("Power", "power (%.2f)", forwardsPower);
                 telemetry.addData("Encoder 1", craneExtend.getCurrentPosition());
                 telemetry.addData("Encoder 2", fakeMotor.getCurrentPosition());
@@ -143,28 +139,43 @@ public class autonomous extends OpMode
         }
     }
 
-    public void crab(int pulses, double power, String direction) { //crabbing left/right for [pulse] pulses at [power] power
+    public void crab(int pulses, double power, String direction, double timeout) { //crabbing left/right for [pulse] pulses at [power] power
+        double moveStart = runtime.seconds();
         if (direction == "right") { //crab right... i think. havent tested it out
             leftBackDrive.setPower(power);
-            rightBackDrive.setPower(power);
+            rightBackDrive.setPower(-power);
             leftFrontDrive.setPower(-power);
-            rightFrontDrive.setPower(-power);
-            while (pulses > fakeMotor.getCurrentPosition()) {}
+            rightFrontDrive.setPower(power);
+            while (-pulses < fakeMotor.getCurrentPosition() && timeout+moveStart > runtime.seconds()) {
+                telemetry.addData("Power", "power (%.2f)", forwardsPower);
+                telemetry.addData("Encoder 1", craneExtend.getCurrentPosition());
+                telemetry.addData("Encoder 2", fakeMotor.getCurrentPosition());
+                telemetry.update();
+            }
             leftBackDrive.setPower(0);
             rightBackDrive.setPower(0);
             leftFrontDrive.setPower(0);
             rightFrontDrive.setPower(0);
+            craneExtend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            fakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         }
         else if (direction == "left") { //crab left
             leftBackDrive.setPower(-power);
-            rightBackDrive.setPower(-power);
+            rightBackDrive.setPower(power);
             leftFrontDrive.setPower(power);
-            rightFrontDrive.setPower(power);
-            while(-pulses<fakeMotor.getCurrentPosition()) {}
+            rightFrontDrive.setPower(-power);
+            while(pulses > fakeMotor.getCurrentPosition() && timeout+moveStart > runtime.seconds()) {
+                telemetry.addData("Power", "power (%.2f)", forwardsPower);
+                telemetry.addData("Encoder 1", craneExtend.getCurrentPosition());
+                telemetry.addData("Encoder 2", fakeMotor.getCurrentPosition());
+                telemetry.update();
+            }
             leftBackDrive.setPower(0);
             rightBackDrive.setPower(0);
             leftFrontDrive.setPower(0);
             rightFrontDrive.setPower(0);
+            craneExtend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            fakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         }
     }
 
@@ -182,16 +193,16 @@ public class autonomous extends OpMode
                 rightBackDrive.setTargetPosition(pulses);
                 leftFrontDrive.setTargetPosition(pulses);
                 rightFrontDrive.setTargetPosition(pulses);
-
+            
         } else if (direction == "left") { //turns left
-
+            
                 leftBackDrive.setTargetPosition(-pulses);
                 rightBackDrive.setTargetPosition(-pulses);
                 leftFrontDrive.setTargetPosition(-pulses);
                 rightFrontDrive.setTargetPosition(-pulses);
             }
         }*/
-
+        
 
     public void tray(String position) { //brings the traygrabber up/down
         if (position == "up"); { //traygrab up, or default position
@@ -208,6 +219,11 @@ public class autonomous extends OpMode
         leftFrontDrive.setTargetPosition(pulses);
         rightFrontDrive.setTargetPosition(pulses);
     }
+    
+    public void encoderReset() {
+        craneExtend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        fakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    }
 
     //Loops when you press init
     @Override
@@ -217,26 +233,34 @@ public class autonomous extends OpMode
     //Runs once when you press start
     @Override
     public void start() {
-        move(1000, 0.5, "forwards");
-
-        craneExtend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        fakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        move(1000, 0.5, "backwards");
-
-        craneExtend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        fakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        move(2500, 0.5, "forwards", 2);
+        encoderReset();
+        crab(1000, 0.5, "left", 2);
+        encoderReset();
+        move(2500, 0.5, "forwards", 2);
+        encoderReset();
+        crab(1000, 0.5, "right", 2);
+        encoderReset();
+        move(2500, 0.5, "forwards", 2);
+        encoderReset();
+        move(2500, 0.5, "backwards", 2);
+        runtime.reset();
+        move(2500, 0.5, "backwards", 2);
+        runtime.reset();
+        move(2500, 0.5, "backwards", 2);
         runtime.reset();
     }
 
     //Loops when you press start
     @Override
     public void loop() {
-        //move(360, 0.25, "forwards");
-
+        
         // Show the elapsed game time and wheel power.
+        telemetry.addData("Run Time:", "" + runtime.toString());
         telemetry.addData("Power", "power (%.2f)", forwardsPower);
-        telemetry.addData("Encoder 1", craneExtend.getCurrentPosition());
-        telemetry.addData("Encoder 2", fakeMotor.getCurrentPosition());
+        telemetry.addData("Encoder Forwards", craneExtend.getCurrentPosition());
+        telemetry.addData("Encoder Sideways", fakeMotor.getCurrentPosition());
+        telemetry.update();
     }
 
     //Runs once when you press stop
