@@ -132,43 +132,44 @@ public class gamepadPOV extends LinearOpMode {
 //******************************************************************************
 
             //Drive controls
-            //POV mode, the gnarly if elses allow finer tuning of robot movement
-            if (gamepad1.left_trigger==0 && gamepad1.right_trigger==0) {
-                if(gamepad1.left_stick_x>0.7 || gamepad1.left_stick_x<-0.7) {
-                    leftBackDrive.setPower(gamepad1.left_stick_x/1.5); //Full throttle
-                    leftFrontDrive.setPower(gamepad1.left_stick_x/1.5);
-                    rightBackDrive.setPower(-gamepad1.left_stick_x/1.5);
-                    rightFrontDrive.setPower(-gamepad1.left_stick_x/1.5);
+            if(!gamepad1.left_bumper && !gamepad1.right_bumper) {
+                //POV mode, the gnarly if elses allow finer tuning of robot movement
+                if (gamepad1.left_trigger==0 && gamepad1.right_trigger==0) {
+                    if(gamepad1.right_stick_x>0.7 || gamepad1.right_stick_x<-0.7) {
+                        leftBackDrive.setPower(gamepad1.right_stick_x/1.5); //Full throttle
+                        leftFrontDrive.setPower(gamepad1.right_stick_x/1.5);
+                        rightBackDrive.setPower(-gamepad1.right_stick_x/1.5);
+                        rightFrontDrive.setPower(-gamepad1.right_stick_x/1.5);
+                    }
+                    else {
+                        leftBackDrive.setPower(gamepad1.right_stick_y/2); //Adjustment throttle
+                        leftFrontDrive.setPower(gamepad1.right_stick_y/2);
+                        rightBackDrive.setPower(-gamepad1.right_stick_y/2); 
+                        rightFrontDrive.setPower(-gamepad1.right_stick_y/2);
+                    }
                 }
-                else {
-                    leftBackDrive.setPower(gamepad1.left_stick_y/2); //Adjustment throttle
-                    leftFrontDrive.setPower(gamepad1.left_stick_y/2);
-                    rightBackDrive.setPower(-gamepad1.left_stick_y/2); 
-                    rightFrontDrive.setPower(-gamepad1.left_stick_y/2);
+                if (gamepad1.left_trigger==0 && gamepad1.right_trigger==0) {
+                    if(gamepad1.left_stick_y>0.7 || gamepad1.left_stick_y<-0.7) {
+                        leftBackDrive.setPower(gamepad1.left_stick_y/1.5); //Full throttle
+                        leftFrontDrive.setPower(gamepad1.left_stick_y/1.5);
+                        rightBackDrive.setPower(gamepad1.left_stick_y/1.5);
+                        rightFrontDrive.setPower(gamepad1.left_stick_y/1.5);
+                    }
+                    else {
+                        leftBackDrive.setPower(gamepad1.left_stick_y/2); //Adjustment throttle
+                        leftFrontDrive.setPower(gamepad1.left_stick_y/2);
+                        rightBackDrive.setPower(gamepad1.left_stick_y/2); 
+                        rightFrontDrive.setPower(gamepad1.left_stick_y/2);
+                    }
+                }
+                //Crab mode
+                else if (gamepad1.left_trigger>0 || gamepad1.right_trigger>0) {
+                    leftBackDrive.setPower(gamepad1.left_stick_x*0.5);
+                    rightBackDrive.setPower(-gamepad1.left_stick_x*0.5);
+                    leftFrontDrive.setPower(-gamepad1.left_stick_x*0.5);
+                    rightFrontDrive.setPower(gamepad1.left_stick_x*0.5);
                 }
             }
-            if (gamepad1.left_trigger==0 && gamepad1.right_trigger==0) {
-                if(gamepad1.right_stick_y>0.7 || gamepad1.right_stick_y<-0.7) {
-                    leftBackDrive.setPower(gamepad1.right_stick_y/1.5); //Full throttle
-                    leftFrontDrive.setPower(gamepad1.right_stick_y/1.5);
-                    rightBackDrive.setPower(gamepad1.right_stick_y/1.5);
-                    rightFrontDrive.setPower(gamepad1.right_stick_y/1.5);
-                }
-                else {
-                    leftBackDrive.setPower(gamepad1.right_stick_y/2); //Adjustment throttle
-                    leftFrontDrive.setPower(gamepad1.right_stick_y/2);
-                    rightBackDrive.setPower(gamepad1.right_stick_y/2); 
-                    rightFrontDrive.setPower(gamepad1.right_stick_y/2);
-                }
-            }
-            //Crab mode
-            else if (gamepad1.left_trigger>0 || gamepad1.right_trigger>0) {
-                leftBackDrive.setPower(gamepad1.left_stick_x*0.5);
-                rightBackDrive.setPower(-gamepad1.left_stick_x*0.5);
-                leftFrontDrive.setPower(-gamepad1.left_stick_x*0.5);
-                rightFrontDrive.setPower(gamepad1.left_stick_x*0.5);
-            }
-            
 //******************************************************************************
 
             //Crane control
@@ -292,22 +293,22 @@ public class gamepadPOV extends LinearOpMode {
             
             //Front flipper left
             if(gamepad1.left_stick_y == -1 && (gamepad1.left_bumper || gamepad1.right_bumper)) {
-                flipperLeft.setPosition(1);
+                flipperLeft.setPosition(0.5); //deployed
             }
-            else if(gamepad1.left_stick_y == 1 && (gamepad1.left_bumper || gamepad1.right_bumper)) {
-                flipperLeft.setPosition(0.5);
+            else if(gamepad1.left_stick_x == -1 && (gamepad1.left_bumper || gamepad1.right_bumper)) {
+                flipperLeft.setPosition(0); //out
             }
             else if(gamepad1.left_stick_x == 1 && (gamepad1.left_bumper || gamepad1.right_bumper)) {
-                flipperLeft.setPosition(0);
+                flipperLeft.setPosition(1); //in
             }
             //Front flipper right
             if(gamepad1.right_stick_y == -1 && (gamepad1.left_bumper || gamepad1.right_bumper)) {
-                flipperRight.setPosition(1);
-            }
-            else if(gamepad1.right_stick_y == 1 && (gamepad1.left_bumper || gamepad1.right_bumper)) {
-                flipperRight.setPosition(0.5);
+                flipperRight.setPosition(0.4);
             }
             else if(gamepad1.right_stick_x == 1 && (gamepad1.left_bumper || gamepad1.right_bumper)) {
+                flipperRight.setPosition(1);
+            }
+            else if(gamepad1.right_stick_x == -1 && (gamepad1.left_bumper || gamepad1.right_bumper)) {
                 flipperRight.setPosition(0);
             }
 //******************************************************************************
