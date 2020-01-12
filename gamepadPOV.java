@@ -311,11 +311,7 @@ public class gamepadPOV extends LinearOpMode {
             else if(gamepad1.right_stick_x == -1 && (gamepad1.left_bumper || gamepad1.right_bumper)) {
                 flipperRight.setPosition(0);
             }
-//******************************************************************************
-
-//Encoder movements
-
-
+            
 //******************************************************************************
 
             //Telemetry display
