@@ -116,6 +116,7 @@ public class autonomous extends OpMode
             rightBackDrive.setPower(0);
             leftFrontDrive.setPower(0);
             rightFrontDrive.setPower(0);
+            telemetry.addLine("Moved out of forwards" + craneElevate.getCurrentPosition() + "@ " + (runtime.seconds()-moveStart));telemetry.update();
             craneExtend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             fakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         }
@@ -134,6 +135,7 @@ public class autonomous extends OpMode
             rightBackDrive.setPower(0);
             leftFrontDrive.setPower(0);
             rightFrontDrive.setPower(0);
+            telemetry.addLine("Moved out of backwards" + craneElevate.getCurrentPosition() + "@ " + (runtime.seconds()-moveStart));telemetry.update();
             craneExtend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             fakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         }
@@ -233,31 +235,41 @@ public class autonomous extends OpMode
     //Runs once when you press start
     @Override
     public void start() {
-        /*move(2500, 0.5, "forwards", 2);
+        move(5000, 0.5, "backwards", 4);
         encoderReset();
-        crab(1000, 0.5, "left", 2);
+        telemetry.addLine("Moved into backwards" + craneElevate.getCurrentPosition());
+        move(5000, 0.5, "forwards", 4);
         encoderReset();
-        move(2500, 0.5, "forwards", 2);
+        telemetry.addLine("Moved into forwards" + craneElevate.getCurrentPosition());
+        move(5000, 0.5, "backwards", 4);
         encoderReset();
-        crab(1000, 0.5, "right", 2);
-        encoderReset();*/
-        move(2500, 0.5, "forwards", 2);
+        move(5000, 0.5, "forwards", 4);
         encoderReset();
-        move(7500, 0.5, "backwards", 6);
+        move(5000, 0.5, "backwards", 4);
         encoderReset();
-        runtime.reset();
+        move(5000, 0.5, "forwards", 4);
+        encoderReset();
+        move(5000, 0.5, "backwards", 4);
+        encoderReset();
+        move(5000, 0.5, "forwards", 4);
+        encoderReset();
+        move(5000, 0.5, "backwards", 4);
+        encoderReset();
+        move(5000, 0.5, "forwards", 4);
+        encoderReset();
     }
 
     //Loops when you press start
     @Override
     public void loop() {
         
-        // Show the elapsed game time and wheel power.
+        /* Show the elapsed game time and wheel power.
         telemetry.addData("Run Time:", "" + runtime.toString());
         telemetry.addData("Power", "power (%.2f)", forwardsPower);
         telemetry.addData("Encoder Forwards", craneExtend.getCurrentPosition());
         telemetry.addData("Encoder Sideways", fakeMotor.getCurrentPosition());
         telemetry.update();
+        */
     }
 
     //Runs once when you press stop
