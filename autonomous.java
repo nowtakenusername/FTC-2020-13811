@@ -233,21 +233,18 @@ public class autonomous extends OpMode
     //Runs once when you press start
     @Override
     public void start() {
-        move(2500, 0.5, "forwards", 2);
+        /*move(2500, 0.5, "forwards", 2);
         encoderReset();
         crab(1000, 0.5, "left", 2);
         encoderReset();
         move(2500, 0.5, "forwards", 2);
         encoderReset();
         crab(1000, 0.5, "right", 2);
-        encoderReset();
+        encoderReset();*/
         move(2500, 0.5, "forwards", 2);
         encoderReset();
-        move(2500, 0.5, "backwards", 2);
-        runtime.reset();
-        move(2500, 0.5, "backwards", 2);
-        runtime.reset();
-        move(2500, 0.5, "backwards", 2);
+        move(7500, 0.5, "backwards", 6);
+        encoderReset();
         runtime.reset();
     }
 
