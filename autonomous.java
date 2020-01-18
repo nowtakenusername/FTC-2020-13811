@@ -32,8 +32,11 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -85,14 +88,18 @@ public class autonomous extends LinearOpMode
         leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
 
+        
         //Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
 
         //Moves go here:
-        move(5000, 0.5, "forwards", 5);
-        crab(5000, 0.5, "left", 5);
-        move(5000, 0.5, "backwards", 5);
-        crab(5000, 0.5, "right", 5);
+        move(1000, 0.5, "backwards", 2);
+        crab(10000, 0.4, "left", 8);
+        move(6000, 0.5, "backwards", 5);
+        tray("down");
+        move(5000, 0.25, "forwards", 5);
+        tray("up");
+        crab(5000, 0.25, "right", 5);
     }
     
     
@@ -167,9 +174,15 @@ public class autonomous extends LinearOpMode
     public void tray(String position) { //brings the traygrabber up/down
         if (position == "up"); {
             trayGrab.setPosition(0);
+            while(trayGrab.getPosition() != 0)
+                trayGrab.setPosition(0);
+                sleep(5000);
         }
         if (position == "down"); {
             trayGrab.setPosition(1);
+            while(trayGrab.getPosition() != 1)
+                trayGrab.setPosition(1);
+                sleep(5000);
         }
     }
     
