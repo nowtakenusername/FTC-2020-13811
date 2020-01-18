@@ -136,7 +136,7 @@ public class autonomousFWRDLEFT extends LinearOpMode
 
     public void crab(int pulses, double power, String direction, double timeout) { //crabbing left/right for [pulse] pulses at [power] power
         double moveStart = runtime.seconds();
-        if (direction == "right") { //crab right... i think. havent tested it out
+        if (direction == "right") {
             leftBackDrive.setPower(power);
             rightBackDrive.setPower(-power);
             leftFrontDrive.setPower(-power);
@@ -152,7 +152,7 @@ public class autonomousFWRDLEFT extends LinearOpMode
             rightFrontDrive.setPower(0);
             encoderReset();
         }
-        else if (direction == "left") { //crab left
+        else if (direction == "left") {
             leftBackDrive.setPower(-power);
             rightBackDrive.setPower(power);
             leftFrontDrive.setPower(power);
