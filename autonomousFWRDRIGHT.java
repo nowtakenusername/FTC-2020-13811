@@ -105,7 +105,7 @@ public class autonomousFWRDRIGHT extends LinearOpMode
     
     public void move(int pulses, double power, String direction, double timeout) { //moving forwards/backwards [pulse] pulses at [power] power
         double moveStart = runtime.seconds();
-        if(direction == "forwards") { //move forwards {
+        if(direction == "forwards") {
             leftBackDrive.setPower(-power);
             rightBackDrive.setPower(-power);
             leftFrontDrive.setPower(-power);
@@ -116,7 +116,7 @@ public class autonomousFWRDRIGHT extends LinearOpMode
                 telemetry.update();
             }
         }
-        else if(direction == "backwards") { //move backwards
+        else if(direction == "backwards") { 
             leftBackDrive.setPower(power);
             rightBackDrive.setPower(power);
             leftFrontDrive.setPower(power);
@@ -136,7 +136,7 @@ public class autonomousFWRDRIGHT extends LinearOpMode
 
     public void crab(int pulses, double power, String direction, double timeout) { //crabbing left/right for [pulse] pulses at [power] power
         double moveStart = runtime.seconds();
-        if (direction == "right") { //crab right... i think. havent tested it out
+        if (direction == "right") {
             leftBackDrive.setPower(power);
             rightBackDrive.setPower(-power);
             leftFrontDrive.setPower(-power);
@@ -152,7 +152,7 @@ public class autonomousFWRDRIGHT extends LinearOpMode
             rightFrontDrive.setPower(0);
             encoderReset();
         }
-        else if (direction == "left") { //crab left
+        else if (direction == "left") {
             leftBackDrive.setPower(-power);
             rightBackDrive.setPower(power);
             leftFrontDrive.setPower(power);
