@@ -136,16 +136,16 @@ public class gamepadPOV extends LinearOpMode {
                 //POV mode, the gnarly if elses allow finer tuning of robot movement
                 if (gamepad1.left_trigger==0 && gamepad1.right_trigger==0) {
                     if(gamepad1.right_stick_x>0.7 || gamepad1.right_stick_x<-0.7) {
-                        leftBackDrive.setPower(gamepad1.right_stick_x/1.5); //Full throttle
-                        leftFrontDrive.setPower(gamepad1.right_stick_x/1.5);
-                        rightBackDrive.setPower(-gamepad1.right_stick_x/1.5);
-                        rightFrontDrive.setPower(-gamepad1.right_stick_x/1.5);
+                        leftBackDrive.setPower(-gamepad1.right_stick_x/1.5); //Full throttle
+                        leftFrontDrive.setPower(-gamepad1.right_stick_x/1.5);
+                        rightBackDrive.setPower(gamepad1.right_stick_x/1.5);
+                        rightFrontDrive.setPower(gamepad1.right_stick_x/1.5);
                     }
                     else {
-                        leftBackDrive.setPower(gamepad1.right_stick_y/2); //Adjustment throttle
-                        leftFrontDrive.setPower(gamepad1.right_stick_y/2);
-                        rightBackDrive.setPower(-gamepad1.right_stick_y/2); 
-                        rightFrontDrive.setPower(-gamepad1.right_stick_y/2);
+                        leftBackDrive.setPower(-gamepad1.right_stick_y/2); //Adjustment throttle
+                        leftFrontDrive.setPower(-gamepad1.right_stick_y/2);
+                        rightBackDrive.setPower(gamepad1.right_stick_y/2); 
+                        rightFrontDrive.setPower(gamepad1.right_stick_y/2);
                     }
                 }
                 if (gamepad1.left_trigger==0 && gamepad1.right_trigger==0) {
@@ -199,53 +199,53 @@ public class gamepadPOV extends LinearOpMode {
             }
             
             //Crane setting positions
-            if(craneSetting == 0) { //COMPACT MODE
+            if(craneSetting == 0) { //LOWEST
                 craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(0);
+                cranePitch.setTargetPosition(-100);
             }
-            if(craneSetting == 1) { //LOWEST
+            if(craneSetting == 1) {
                 craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(0);
+                cranePitch.setTargetPosition(-70);
             }
             if(craneSetting == 2) {
                 craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(50);
+                cranePitch.setTargetPosition(20);
             }
             if(craneSetting == 3) {
                 craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(140);
+                cranePitch.setTargetPosition(120);
             }
             if(craneSetting == 4) {
                 craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(280);
+                cranePitch.setTargetPosition(250);
             }
             if(craneSetting == 5) {
                 craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(420);
+                cranePitch.setTargetPosition(400);
             }
             if(craneSetting == 6) {
-                craneElevate.setTargetPosition(-180);
-                cranePitch.setTargetPosition(420);
+                craneElevate.setTargetPosition(-80);
+                cranePitch.setTargetPosition(400);
             }
             if(craneSetting == 7) {
-                craneElevate.setTargetPosition(-360);
-                cranePitch.setTargetPosition(420);
+                craneElevate.setTargetPosition(-160);
+                cranePitch.setTargetPosition(400);
             }
             if(craneSetting == 8) {
-                craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(0);
+                craneElevate.setTargetPosition(-240);
+                cranePitch.setTargetPosition(400);
             }
             if(craneSetting == 10) {
-                craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(0);
+                craneElevate.setTargetPosition(-320);
+                cranePitch.setTargetPosition(400);
             }
             if(craneSetting == 11) {
-                craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(0);
+                craneElevate.setTargetPosition(-400);
+                cranePitch.setTargetPosition(400);
             }
             if(craneSetting == 12) { //HIGHEST
-                craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(0);
+                craneElevate.setTargetPosition(-480);
+                cranePitch.setTargetPosition(400);
             }
             
 //******************************************************************************
@@ -311,7 +311,11 @@ public class gamepadPOV extends LinearOpMode {
             else if(gamepad1.right_stick_x == -1 && (gamepad1.left_bumper || gamepad1.right_bumper)) {
                 flipperRight.setPosition(0);
             }
-            
+//******************************************************************************
+
+//Encoder movements
+
+
 //******************************************************************************
 
             //Telemetry display
