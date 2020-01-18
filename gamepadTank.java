@@ -8,7 +8,7 @@
  * of conditions and the following disclaimer.
  *
  * Redistributions in binary form must reproduce the above copyright notice, this
- * list of conditions and the following disclaimer in the documentation and/or
+ * list of conditions and http://192.168.49.1:8080/java/editor.html?/src/org/firstinspires/ftc/robotcontroller/external/samples/gamepadTank.javathe following disclaimer in the documentation and/or
  * other materials provided with the distribution.
  *
  * Neither the name of FIRST nor the names of its contributors may be used to endorse or
@@ -155,10 +155,10 @@ public class gamepadTank extends LinearOpMode {
 
                 //Crab mode
                 else if (gamepad1.left_trigger>0 || gamepad1.right_trigger>0) {
-                    leftBackDrive.setPower(gamepad1.left_stick_x*0.5);
-                    rightBackDrive.setPower(-gamepad1.left_stick_x*0.5);
-                    leftFrontDrive.setPower(-gamepad1.left_stick_x*0.5);
-                    rightFrontDrive.setPower(gamepad1.left_stick_x*0.5);
+                    leftBackDrive.setPower(gamepad1.left_stick_x*0.8);
+                    rightBackDrive.setPower(-gamepad1.left_stick_x*0.8);
+                    leftFrontDrive.setPower(-gamepad1.left_stick_x*0.8);
+                    rightFrontDrive.setPower(gamepad1.left_stick_x*0.8);
                 }
             }
 //******************************************************************************
@@ -190,53 +190,53 @@ public class gamepadTank extends LinearOpMode {
             }
             
             //Crane setting positions
-            if(craneSetting == 0) { //COMPACT MODE
+            if(craneSetting == 0) { //LOWEST
                 craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(0);
+                cranePitch.setTargetPosition(-100);
             }
-            if(craneSetting == 1) { //LOWEST
+            if(craneSetting == 1) {
                 craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(0);
+                cranePitch.setTargetPosition(-70);
             }
             if(craneSetting == 2) {
                 craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(50);
+                cranePitch.setTargetPosition(20);
             }
             if(craneSetting == 3) {
                 craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(140);
+                cranePitch.setTargetPosition(120);
             }
             if(craneSetting == 4) {
                 craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(280);
+                cranePitch.setTargetPosition(250);
             }
             if(craneSetting == 5) {
                 craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(420);
+                cranePitch.setTargetPosition(400);
             }
             if(craneSetting == 6) {
-                craneElevate.setTargetPosition(-180);
-                cranePitch.setTargetPosition(420);
+                craneElevate.setTargetPosition(-80);
+                cranePitch.setTargetPosition(400);
             }
             if(craneSetting == 7) {
-                craneElevate.setTargetPosition(-360);
-                cranePitch.setTargetPosition(420);
+                craneElevate.setTargetPosition(-160);
+                cranePitch.setTargetPosition(400);
             }
             if(craneSetting == 8) {
-                craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(0);
+                craneElevate.setTargetPosition(-240);
+                cranePitch.setTargetPosition(400);
             }
             if(craneSetting == 10) {
-                craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(0);
+                craneElevate.setTargetPosition(-320);
+                cranePitch.setTargetPosition(400);
             }
             if(craneSetting == 11) {
-                craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(0);
+                craneElevate.setTargetPosition(-400);
+                cranePitch.setTargetPosition(400);
             }
             if(craneSetting == 12) { //HIGHEST
-                craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(0);
+                craneElevate.setTargetPosition(-480);
+                cranePitch.setTargetPosition(400);
             }
             
 //******************************************************************************
@@ -272,7 +272,7 @@ public class gamepadTank extends LinearOpMode {
             
             //Tray grabber
             if(gamepad2.right_trigger==1 && trayGrabWait<=runtime.seconds() && trayGrabSetting == 0) { 
-                trayGrab.setPosition(0.9);
+                trayGrab.setPosition(1);
                 trayGrabSetting = 1;
                 trayGrabWait=runtime.seconds()+0.25;
             }
@@ -302,10 +302,6 @@ public class gamepadTank extends LinearOpMode {
             else if(gamepad1.right_stick_x == -1 && (gamepad1.left_bumper || gamepad1.right_bumper)) {
                 flipperRight.setPosition(0);
             }
-//******************************************************************************
-
-//Encoder movements
-
 
 //******************************************************************************
 
@@ -315,11 +311,5 @@ public class gamepadTank extends LinearOpMode {
             telemetry.addData("Crane Setting", "" + craneSetting);
             telemetry.update();
         }
-        //Runs to put the robot down to default state
-        craneElevate.setPower(-1);
-        cranePitch.setPower(-1);
-        craneElevate.setTargetPosition(0);
-        cranePitch.setTargetPosition(0);
-        sleep(10000);
     }
 }
