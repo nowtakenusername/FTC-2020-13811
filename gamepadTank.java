@@ -45,19 +45,9 @@ public class gamepadTank extends LinearOpMode {
     //Declaring OpMode members
     private ElapsedTime runtime = new ElapsedTime();
 
-    private DcMotor leftBackDrive;
-    private DcMotor rightBackDrive;
-    private DcMotor rightFrontDrive;
-    private DcMotor leftFrontDrive;
-    private DcMotor craneExtend; //Used for encoder wheel forwards
-    private DcMotor cranePitch;
-    private DcMotor craneElevate;
-    private DcMotor fakeMotor; //Used for encoder wheel sideways
-    private Servo craneGrab;
-    private Servo trayGrab;
-    private Servo craneGrabAttitude;
-    private Servo flipperLeft;
-    private Servo flipperRight;
+    private DcMotor leftBackDrive, rightBackDrive, leftFrontDrive, rightFrontDrive;
+    private DcMotor craneExtend, cranePitch, craneElevate, fakeMotor;
+    private Servo craneGrab, trayGrab, craneGrabAttitude, flipperLeft, flipperRight;
 
     public void runOpMode() {
         
@@ -93,7 +83,13 @@ public class gamepadTank extends LinearOpMode {
         leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
 
-        //Initializing variables
+        //Initializing the pickier variables
+        //Drive ramp up/down variables
+        double leftRamp = 0;
+        double rightRamp = 0;
+        double leftRampStart = 0;
+        double rightRampStart = 0;
+        double rampWait = runtime.seconds();
         //Timer variables
         double settingWait = 0; 
         double craneGrabWait = 0;
@@ -104,8 +100,7 @@ public class gamepadTank extends LinearOpMode {
         double trayGrabWait = 0;
         double trayGrabSetting = 0;
         int craneElevatePulses = 0;
-          int craneSetting = 1; //Starting barely not scraping the ground
-        //int craneSetting = 0; //Starting in compact mode
+        int craneSetting = 2;
 
         telemetry.addData("Status", "Initialized");
         telemetry.update(); //Done initalizing
@@ -120,47 +115,69 @@ public class gamepadTank extends LinearOpMode {
 //******************************************************************************
             
             //Variable setup
-            //Setting up variables - many are redundant and are pending removal
             double craneExtendPower; //Crane linear actuator motor power
             double cranePitchPower; //Crane pitch motor power
             double craneElevatePower; //Crane lift motor power
             double craneGrabPos = 0; //Grabber claw servo position
             double trayGrabPos = 0; //Tray grabber servo position
             double craneGrabAttitudePos = 0; //Grabber attitude servo position
-            double cranePosOffset = 0; //(un)used to offset future values if starting at craneSetting 0
 
 //******************************************************************************
 
             //Drive controls
             if(!gamepad1.left_bumper && !gamepad1.right_bumper) {
-                //Tank mode, the gnarly if elses allow finer tuning of robot movement
-                if (gamepad1.left_trigger==0 && gamepad1.right_trigger==0) {
-                    if(gamepad1.left_stick_y>0.7 || gamepad1.left_stick_y<-0.7) {
-                        leftBackDrive.setPower(gamepad1.left_stick_y/1.5); //Full throttle
-                        leftFrontDrive.setPower(gamepad1.left_stick_y/1.5);
+                //Tank mode
+                if (gamepad1.left_trigger == 0 || gamepad1.right_trigger == 0) {
+                    leftBackDrive.setPower(0 + leftRamp);
+                    leftFrontDrive.setPower(0 + leftRamp);
+                    rightBackDrive.setPower(0 + rightRamp);
+                    rightFrontDrive.setPower(0 + rightRamp);
+                
+                    //Ramping up and down
+                    if(gamepad1.left_stick_y <= 0 && (leftRampStart + 0.25 > runtime.seconds())) {
+                        leftRampStart = runtime.seconds();
+                        leftRamp -= gamepad1.left_stick_y * 0.05;
                     }
-                    else {
-                        leftBackDrive.setPower(gamepad1.left_stick_y/2); //Adjustment throttle
-                        leftFrontDrive.setPower(gamepad1.left_stick_y/2);
+                    if(gamepad1.right_stick_y <= 0 && (rightRampStart + 0.25 > runtime.seconds())) {
+                        rightRampStart = runtime.seconds();
+                        rightRamp -= gamepad1.right_stick_y * 0.05;
                     }
-                    if(gamepad1.right_stick_y>0.7 || gamepad1.right_stick_y<-0.7) {
-                        rightBackDrive.setPower(gamepad1.right_stick_y/1.5); //Full throttle
-                        rightFrontDrive.setPower(gamepad1.right_stick_y/1.5);
+                    if(gamepad1.left_stick_y >= 0 && (leftRampStart + 0.25 > runtime.seconds())) {
+                        leftRampStart = runtime.seconds();
+                        leftRamp += gamepad1.left_stick_y * 0.05;
                     }
-                    else {
-                        rightBackDrive.setPower(gamepad1.right_stick_y/2); //Adjustment throttle
-                        rightFrontDrive.setPower(gamepad1.right_stick_y/2);
+                    if(gamepad1.right_stick_y >= 0 && (rightRampStart + 0.25 > runtime.seconds())) {
+                        rightRampStart = runtime.seconds();
+                        rightRamp += gamepad1.right_stick_y * 0.05;
+                    }
+                    
+                    if(gamepad1.left_stick_y == 0 && (leftRampStart + 0.05 > runtime.seconds()) && leftRamp > 0) {
+                        leftRampStart = runtime.seconds();
+                        leftRamp -= 0.05;
+                    }
+                    if(gamepad1.right_stick_y == 0 && (rightRampStart + 0.05 > runtime.seconds()) && rightRamp > 0) {
+                        rightRampStart = runtime.seconds();
+                        rightRamp -= 0.05;
+                    }
+                    if(gamepad1.left_stick_y == 0 && (leftRampStart + 0.05 > runtime.seconds()) && leftRamp < 0) {
+                        leftRampStart = runtime.seconds();
+                        leftRamp += 0.05;
+                    }
+                    if(gamepad1.right_stick_y == 0 && (rightRampStart + 0.05 > runtime.seconds()) && rightRamp < 0) {
+                        rightRampStart = runtime.seconds();
+                        rightRamp += 0.05;
                     }
                 }
-
+                
                 //Crab mode
-                else if (gamepad1.left_trigger>0 || gamepad1.right_trigger>0) {
-                    leftBackDrive.setPower(gamepad1.left_stick_x*0.8);
-                    rightBackDrive.setPower(-gamepad1.left_stick_x*0.8);
-                    leftFrontDrive.setPower(-gamepad1.left_stick_x*0.8);
-                    rightFrontDrive.setPower(gamepad1.left_stick_x*0.8);
+                if (gamepad1.left_trigger > 0 || gamepad1.right_trigger > 0) {
+                    leftBackDrive.setPower(gamepad1.left_stick_x);
+                    rightBackDrive.setPower(-gamepad1.left_stick_x);
+                    leftFrontDrive.setPower(-gamepad1.left_stick_x);
+                    rightFrontDrive.setPower(gamepad1.left_stick_x);
                 }
             }
+            
 //******************************************************************************
 
             //Crane control
@@ -191,52 +208,52 @@ public class gamepadTank extends LinearOpMode {
             
             //Crane setting positions
             if(craneSetting == 0) { //LOWEST
-                craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(-100);
+                craneElevate.setTargetPosition(-200);
+                cranePitch.setTargetPosition(30);
             }
             if(craneSetting == 1) {
                 craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(-70);
+                cranePitch.setTargetPosition(50);
             }
             if(craneSetting == 2) {
                 craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(20);
+                cranePitch.setTargetPosition(100);
             }
             if(craneSetting == 3) {
                 craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(120);
+                cranePitch.setTargetPosition(150);
             }
             if(craneSetting == 4) {
                 craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(250);
+                cranePitch.setTargetPosition(200);
             }
             if(craneSetting == 5) {
                 craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(400);
+                cranePitch.setTargetPosition(250);
             }
             if(craneSetting == 6) {
                 craneElevate.setTargetPosition(-80);
-                cranePitch.setTargetPosition(400);
+                cranePitch.setTargetPosition(250);
             }
             if(craneSetting == 7) {
                 craneElevate.setTargetPosition(-160);
-                cranePitch.setTargetPosition(400);
+                cranePitch.setTargetPosition(250);
             }
             if(craneSetting == 8) {
                 craneElevate.setTargetPosition(-240);
-                cranePitch.setTargetPosition(400);
+                cranePitch.setTargetPosition(250);
             }
             if(craneSetting == 10) {
                 craneElevate.setTargetPosition(-320);
-                cranePitch.setTargetPosition(400);
+                cranePitch.setTargetPosition(250);
             }
             if(craneSetting == 11) {
                 craneElevate.setTargetPosition(-400);
-                cranePitch.setTargetPosition(400);
+                cranePitch.setTargetPosition(200);
             }
             if(craneSetting == 12) { //HIGHEST
                 craneElevate.setTargetPosition(-480);
-                cranePitch.setTargetPosition(400);
+                cranePitch.setTargetPosition(150);
             }
             
 //******************************************************************************
