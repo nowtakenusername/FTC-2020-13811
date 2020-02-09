@@ -30,6 +30,9 @@
 package org.firstinspires.ftc.robotcontroller.external.samples;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -45,9 +48,19 @@ public class gamepadTank extends LinearOpMode {
     //Declaring OpMode members
     private ElapsedTime runtime = new ElapsedTime();
 
-    private DcMotor leftBackDrive, rightBackDrive, leftFrontDrive, rightFrontDrive;
-    private DcMotor craneExtend, cranePitch, craneElevate, fakeMotor;
-    private Servo craneGrab, trayGrab, craneGrabAttitude, flipperLeft, flipperRight;
+    private DcMotor leftBackDrive;
+    private DcMotor rightBackDrive;
+    private DcMotor rightFrontDrive;
+    private DcMotor leftFrontDrive;
+    private DcMotor craneExtend; //Used for encoder wheel forwards
+    private DcMotor cranePitch;
+    private DcMotor craneElevate;
+    private DcMotor fakeMotor; //Used for encoder wheel sideways
+    private Servo craneGrab;
+    private Servo trayGrab;
+    private Servo craneGrabAttitude;
+    private Servo flipperLeft;
+    private Servo flipperRight;
 
     public void runOpMode() {
         
@@ -83,25 +96,20 @@ public class gamepadTank extends LinearOpMode {
         leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
 
-        //Initializing the pickier variables
-        //Drive ramp up/down variables
-        double leftRamp = 0;
-        double rightRamp = 0;
-        double leftRampStart = 0;
-        double rightRampStart = 0;
-        double rampWait = runtime.seconds();
+        //Initializing variables
         //Timer variables
         double settingWait = 0; 
         double craneGrabWait = 0;
         double craneGrabAttitudeWait = 0;
+        double CEAW = 0; //craneElevateAdjustmentWait, or CEAW
         //Setting variables
         double craneGrabSetting = 0;
         double CGAD = 0.5; //craneGrabAttitudeDisplacement, or CGAD
         double trayGrabWait = 0;
         double trayGrabSetting = 0;
         int craneElevatePulses = 0;
-        int craneSetting = 2;
-
+        int craneSetting = 1; //Starting barely not scraping the ground
+        
         telemetry.addData("Status", "Initialized");
         telemetry.update(); //Done initalizing
 
@@ -113,68 +121,35 @@ public class gamepadTank extends LinearOpMode {
         while (opModeIsActive()) {
             
 //******************************************************************************
-            
-            //Variable setup
-            double craneExtendPower; //Crane linear actuator motor power
-            double cranePitchPower; //Crane pitch motor power
-            double craneElevatePower; //Crane lift motor power
-            double craneGrabPos = 0; //Grabber claw servo position
-            double trayGrabPos = 0; //Tray grabber servo position
-            double craneGrabAttitudePos = 0; //Grabber attitude servo position
-
-//******************************************************************************
 
             //Drive controls
             if(!gamepad1.left_bumper && !gamepad1.right_bumper) {
-                //Tank mode
-                if (gamepad1.left_trigger == 0 || gamepad1.right_trigger == 0) {
-                    leftBackDrive.setPower(0 + leftRamp);
-                    leftFrontDrive.setPower(0 + leftRamp);
-                    rightBackDrive.setPower(0 + rightRamp);
-                    rightFrontDrive.setPower(0 + rightRamp);
-                
-                    //Ramping up and down
-                    if(gamepad1.left_stick_y <= 0 && (leftRampStart + 0.25 > runtime.seconds())) {
-                        leftRampStart = runtime.seconds();
-                        leftRamp -= gamepad1.left_stick_y * 0.05;
+                //Tank mode, the gnarly if elses allow finer tuning of robot movement
+                if (gamepad1.left_trigger==0 && gamepad1.right_trigger==0) {
+                    if(gamepad1.left_stick_y>0.7 || gamepad1.left_stick_y<-0.7) {
+                        leftBackDrive.setPower(gamepad1.left_stick_y/1.5); //Full throttle
+                        leftFrontDrive.setPower(gamepad1.left_stick_y/1.5);
                     }
-                    if(gamepad1.right_stick_y <= 0 && (rightRampStart + 0.25 > runtime.seconds())) {
-                        rightRampStart = runtime.seconds();
-                        rightRamp -= gamepad1.right_stick_y * 0.05;
+                    else {
+                        leftBackDrive.setPower(gamepad1.left_stick_y/2); //Adjustment throttle
+                        leftFrontDrive.setPower(gamepad1.left_stick_y/2);
                     }
-                    if(gamepad1.left_stick_y >= 0 && (leftRampStart + 0.25 > runtime.seconds())) {
-                        leftRampStart = runtime.seconds();
-                        leftRamp += gamepad1.left_stick_y * 0.05;
+                    if(gamepad1.right_stick_y>0.7 || gamepad1.right_stick_y<-0.7) {
+                        rightBackDrive.setPower(gamepad1.right_stick_y/1.5); //Full throttle
+                        rightFrontDrive.setPower(gamepad1.right_stick_y/1.5);
                     }
-                    if(gamepad1.right_stick_y >= 0 && (rightRampStart + 0.25 > runtime.seconds())) {
-                        rightRampStart = runtime.seconds();
-                        rightRamp += gamepad1.right_stick_y * 0.05;
-                    }
-                    
-                    if(gamepad1.left_stick_y == 0 && (leftRampStart + 0.05 > runtime.seconds()) && leftRamp > 0) {
-                        leftRampStart = runtime.seconds();
-                        leftRamp -= 0.05;
-                    }
-                    if(gamepad1.right_stick_y == 0 && (rightRampStart + 0.05 > runtime.seconds()) && rightRamp > 0) {
-                        rightRampStart = runtime.seconds();
-                        rightRamp -= 0.05;
-                    }
-                    if(gamepad1.left_stick_y == 0 && (leftRampStart + 0.05 > runtime.seconds()) && leftRamp < 0) {
-                        leftRampStart = runtime.seconds();
-                        leftRamp += 0.05;
-                    }
-                    if(gamepad1.right_stick_y == 0 && (rightRampStart + 0.05 > runtime.seconds()) && rightRamp < 0) {
-                        rightRampStart = runtime.seconds();
-                        rightRamp += 0.05;
+                    else {
+                        rightBackDrive.setPower(gamepad1.right_stick_y/2); //Adjustment throttle
+                        rightFrontDrive.setPower(gamepad1.right_stick_y/2);
                     }
                 }
-                
+
                 //Crab mode
-                if (gamepad1.left_trigger > 0 || gamepad1.right_trigger > 0) {
-                    leftBackDrive.setPower(gamepad1.left_stick_x);
-                    rightBackDrive.setPower(-gamepad1.left_stick_x);
-                    leftFrontDrive.setPower(-gamepad1.left_stick_x);
-                    rightFrontDrive.setPower(gamepad1.left_stick_x);
+                else if (gamepad1.left_trigger>0 || gamepad1.right_trigger>0) {
+                    leftBackDrive.setPower(gamepad1.left_stick_x*0.8);
+                    rightBackDrive.setPower(-gamepad1.left_stick_x*0.8);
+                    leftFrontDrive.setPower(-gamepad1.left_stick_x*0.8);
+                    rightFrontDrive.setPower(gamepad1.left_stick_x*0.8);
                 }
             }
             
@@ -182,15 +157,25 @@ public class gamepadTank extends LinearOpMode {
 
             //Crane control
             //Runs the linear actuator
-            if(gamepad2.y) { //Extends the crane arm
+            if(gamepad2.x) { //Extends the crane arm
                 craneExtend.setPower(-1);
             }
             else if(gamepad2.a) {
                 craneExtend.setPower(1);
             }
-            else
-                craneExtend.setPower(0);
+            else craneExtend.setPower(0);
 
+            /*if(gamepad2.left_stick_y < 0 && CEAW < runtime.seconds()) { //Used for small lift adjustments
+                CEAW = runtime.seconds() + 0.33;
+                craneElevate.setPower(-0.5);
+                craneElevate.setTargetPosition((int)(craneElevate.getTargetPosition() + gamepad2.left_stick_y * -10));
+            }
+            if(gamepad2.left_stick_y > 0 && CEAW < runtime.seconds()) {
+                CEAW = runtime.seconds() + 0.33;
+                craneElevate.setPower(0.2);
+                craneElevate.setTargetPosition((int)(craneElevate.getTargetPosition() + gamepad2.left_stick_y * 10));
+            }*/
+            
             //sets the automated crane setting down by one
             if(gamepad2.dpad_down==true && settingWait<=runtime.seconds() && craneSetting > 0) { 
                 craneSetting -= 1; 
@@ -208,52 +193,52 @@ public class gamepadTank extends LinearOpMode {
             
             //Crane setting positions
             if(craneSetting == 0) { //LOWEST
-                craneElevate.setTargetPosition(-200);
-                cranePitch.setTargetPosition(30);
+                craneElevate.setTargetPosition(0);
+                cranePitch.setTargetPosition(-100);
             }
             if(craneSetting == 1) {
                 craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(50);
+                cranePitch.setTargetPosition(-70);
             }
             if(craneSetting == 2) {
                 craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(100);
+                cranePitch.setTargetPosition(20);
             }
             if(craneSetting == 3) {
                 craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(150);
+                cranePitch.setTargetPosition(120);
             }
             if(craneSetting == 4) {
                 craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(200);
+                cranePitch.setTargetPosition(250);
             }
             if(craneSetting == 5) {
                 craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(250);
+                cranePitch.setTargetPosition(400);
             }
             if(craneSetting == 6) {
                 craneElevate.setTargetPosition(-80);
-                cranePitch.setTargetPosition(250);
+                cranePitch.setTargetPosition(400);
             }
             if(craneSetting == 7) {
                 craneElevate.setTargetPosition(-160);
-                cranePitch.setTargetPosition(250);
+                cranePitch.setTargetPosition(400);
             }
             if(craneSetting == 8) {
                 craneElevate.setTargetPosition(-240);
-                cranePitch.setTargetPosition(250);
+                cranePitch.setTargetPosition(400);
             }
             if(craneSetting == 10) {
                 craneElevate.setTargetPosition(-320);
-                cranePitch.setTargetPosition(250);
+                cranePitch.setTargetPosition(400);
             }
             if(craneSetting == 11) {
                 craneElevate.setTargetPosition(-400);
-                cranePitch.setTargetPosition(200);
+                cranePitch.setTargetPosition(400);
             }
             if(craneSetting == 12) { //HIGHEST
                 craneElevate.setTargetPosition(-480);
-                cranePitch.setTargetPosition(150);
+                cranePitch.setTargetPosition(400);
             }
             
 //******************************************************************************
@@ -272,18 +257,18 @@ public class gamepadTank extends LinearOpMode {
             }
             
             //Crane grabber attitude 
-            if(gamepad2.left_bumper==true && craneGrabAttitudeWait <= runtime.seconds() && CGAD >= 0) {
+            if(gamepad2.right_bumper==true && craneGrabAttitudeWait <= runtime.seconds() && CGAD >= 0) {
                 CGAD -= 0.05;
                 craneGrabAttitudeWait=runtime.seconds()+0.1;
                 craneGrabAttitude.setPosition(CGAD);
             }
-            else if(gamepad2.right_bumper==true && craneGrabAttitudeWait <= runtime.seconds() &&CGAD <= 1) {
+            else if(gamepad2.left_bumper==true && craneGrabAttitudeWait <= runtime.seconds() &&CGAD <= 1) {
                 CGAD += 0.05;
                 craneGrabAttitudeWait=runtime.seconds()+0.1;
                 craneGrabAttitude.setPosition(CGAD);
             }
             else if(gamepad2.left_bumper==true && gamepad2.right_bumper == true) {
-                CGAD = 1;
+                CGAD = 0.75;
                 craneGrabAttitude.setPosition(CGAD);
             }
             
@@ -301,23 +286,26 @@ public class gamepadTank extends LinearOpMode {
             
             //Front flipper left
             if(gamepad1.left_stick_y == -1 && (gamepad1.left_bumper || gamepad1.right_bumper)) {
-                flipperLeft.setPosition(0.5); //deployed
+                flipperLeft.setPosition(0.4); //deployed
             }
             else if(gamepad1.left_stick_x == -1 && (gamepad1.left_bumper || gamepad1.right_bumper)) {
-                flipperLeft.setPosition(0); //out
+                flipperLeft.setPosition(1); //out
             }
             else if(gamepad1.left_stick_x == 1 && (gamepad1.left_bumper || gamepad1.right_bumper)) {
-                flipperLeft.setPosition(1); //in
+                flipperLeft.setPosition(0); //in
+            }
+            else if(gamepad1.left_stick_y <= -0.5 && gamepad1.left_stick_y >= 0.5 && (gamepad1.left_bumper || gamepad1.right_bumper)) {
+                flipperLeft.setPosition(0.25); //clasping
             }
             //Front flipper right
             if(gamepad1.right_stick_y == -1 && (gamepad1.left_bumper || gamepad1.right_bumper)) {
-                flipperRight.setPosition(0.4);
+                flipperRight.setPosition(0.5);
             }
             else if(gamepad1.right_stick_x == 1 && (gamepad1.left_bumper || gamepad1.right_bumper)) {
-                flipperRight.setPosition(1);
+                flipperRight.setPosition(0);
             }
             else if(gamepad1.right_stick_x == -1 && (gamepad1.left_bumper || gamepad1.right_bumper)) {
-                flipperRight.setPosition(0);
+                flipperRight.setPosition(1);
             }
 
 //******************************************************************************
