@@ -101,12 +101,15 @@ public class gamepadTank extends LinearOpMode {
         double settingWait = 0; 
         double craneGrabWait = 0;
         double craneGrabAttitudeWait = 0;
+        double trayGrabWait = 0;
         double CEAW = 0; //craneElevateAdjustmentWait, or CEAW
+        double CPAW = 0; //cranePitchAdjustmentWait, or CPAW
+        double craneModeWait = 0;
         //Setting variables
         double craneGrabSetting = 0;
         double CGAD = 0.5; //craneGrabAttitudeDisplacement, or CGAD
-        double trayGrabWait = 0;
         double trayGrabSetting = 0;
+        double craneModeSetting = 0; //Starting in automated positions
         int craneElevatePulses = 0;
         int craneSetting = 1; //Starting barely not scraping the ground
         
@@ -165,80 +168,102 @@ public class gamepadTank extends LinearOpMode {
             }
             else craneExtend.setPower(0);
 
-            /*if(gamepad2.left_stick_y < 0 && CEAW < runtime.seconds()) { //Used for small lift adjustments
-                CEAW = runtime.seconds() + 0.33;
-                craneElevate.setPower(-0.5);
-                craneElevate.setTargetPosition((int)(craneElevate.getTargetPosition() + gamepad2.left_stick_y * -10));
+            if(gamepad2.b && craneModeSetting == 0 && craneModeWait < runtime.seconds() {
+                craneModeWait = runtime.seconds() + 0.5;
+                craneModeSetting = 1;
             }
-            if(gamepad2.left_stick_y > 0 && CEAW < runtime.seconds()) {
-                CEAW = runtime.seconds() + 0.33;
-                craneElevate.setPower(0.2);
-                craneElevate.setTargetPosition((int)(craneElevate.getTargetPosition() + gamepad2.left_stick_y * 10));
-            }*/
-            
-            //sets the automated crane setting down by one
-            if(gamepad2.dpad_down==true && settingWait<=runtime.seconds() && craneSetting > 0) { 
-                craneSetting -= 1; 
-                craneElevate.setPower(-0.2);
-                cranePitch.setPower(0.6);
-                settingWait=runtime.seconds()+0.25; //Sets a timer for .25 seconds until it can go down another setting
-            }
-            //sets the automated crane setting up by one
-            else if(gamepad2.dpad_up==true && settingWait<=runtime.seconds() && craneSetting < 12) { 
-                craneSetting += 1; 
-                craneElevate.setPower(-0.5);
-                cranePitch.setPower(0.8);
-                settingWait=runtime.seconds()+0.25; //Sets a timer for .25 seconds until it can go up another setting
+            if(gamepad2.b && craneModeSetting == 1 && craneModeWait < runtime.seconds() {
+                craneModeWait = runtime.seconds() + 0.5;
+                craneModeSetting = 0;
             }
             
-            //Crane setting positions
-            if(craneSetting == 0) { //LOWEST
-                craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(-100);
+            if(craneModeSetting == 0) { //Automated Positions
+                //sets the automated crane setting down by one
+                if(gamepad2.dpad_down==true && settingWait<=runtime.seconds() && craneSetting > 0) { 
+                    craneSetting -= 1; 
+                    craneElevate.setPower(-0.2);
+                    cranePitch.setPower(0.6);
+                    settingWait=runtime.seconds()+0.25; //Sets a timer for .25 seconds until it can go down another setting
+                }
+                //sets the automated crane setting up by one
+                else if(gamepad2.dpad_up==true && settingWait<=runtime.seconds() && craneSetting < 12) { 
+                    craneSetting += 1; 
+                    craneElevate.setPower(-0.5);
+                    cranePitch.setPower(0.8);
+                    settingWait=runtime.seconds()+0.25; //Sets a timer for .25 seconds until it can go up another setting
+                }
+
+                //Crane setting positions
+                if(craneSetting == 0) { //LOWEST
+                    craneElevate.setTargetPosition(0);
+                    cranePitch.setTargetPosition(-100);
+                }
+                if(craneSetting == 1) {
+                    craneElevate.setTargetPosition(0);
+                    cranePitch.setTargetPosition(-70);
+                }
+                if(craneSetting == 2) {
+                    craneElevate.setTargetPosition(0);
+                    cranePitch.setTargetPosition(20);
+                }
+                if(craneSetting == 3) {
+                    craneElevate.setTargetPosition(0);
+                    cranePitch.setTargetPosition(120);
+                }
+                if(craneSetting == 4) {
+                    craneElevate.setTargetPosition(0);
+                    cranePitch.setTargetPosition(250);
+                }
+                if(craneSetting == 5) {
+                    craneElevate.setTargetPosition(0);
+                    cranePitch.setTargetPosition(400);
+                }
+                if(craneSetting == 6) {
+                    craneElevate.setTargetPosition(-80);
+                    cranePitch.setTargetPosition(400);
+                }
+                if(craneSetting == 7) {
+                    craneElevate.setTargetPosition(-160);
+                    cranePitch.setTargetPosition(400);
+                }
+                if(craneSetting == 8) {
+                    craneElevate.setTargetPosition(-240);
+                    cranePitch.setTargetPosition(400);
+                }
+                if(craneSetting == 10) {
+                    craneElevate.setTargetPosition(-320);
+                    cranePitch.setTargetPosition(400);
+                }
+                if(craneSetting == 11) {
+                    craneElevate.setTargetPosition(-400);
+                    cranePitch.setTargetPosition(400);
+                }
+                if(craneSetting == 12) { //HIGHEST
+                    craneElevate.setTargetPosition(-480);
+                    cranePitch.setTargetPosition(400);
+                }
             }
-            if(craneSetting == 1) {
-                craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(-70);
-            }
-            if(craneSetting == 2) {
-                craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(20);
-            }
-            if(craneSetting == 3) {
-                craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(120);
-            }
-            if(craneSetting == 4) {
-                craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(250);
-            }
-            if(craneSetting == 5) {
-                craneElevate.setTargetPosition(0);
-                cranePitch.setTargetPosition(400);
-            }
-            if(craneSetting == 6) {
-                craneElevate.setTargetPosition(-80);
-                cranePitch.setTargetPosition(400);
-            }
-            if(craneSetting == 7) {
-                craneElevate.setTargetPosition(-160);
-                cranePitch.setTargetPosition(400);
-            }
-            if(craneSetting == 8) {
-                craneElevate.setTargetPosition(-240);
-                cranePitch.setTargetPosition(400);
-            }
-            if(craneSetting == 10) {
-                craneElevate.setTargetPosition(-320);
-                cranePitch.setTargetPosition(400);
-            }
-            if(craneSetting == 11) {
-                craneElevate.setTargetPosition(-400);
-                cranePitch.setTargetPosition(400);
-            }
-            if(craneSetting == 12) { //HIGHEST
-                craneElevate.setTargetPosition(-480);
-                cranePitch.setTargetPosition(400);
+            else if(craneModeSetting == 1) { //Manual adjustments
+                if(gamepad2.left_stick_y < 0 && CEAW < runtime.seconds()) { //Used for small lift adjustments
+                    CEAW = runtime.seconds() + 0.33;
+                    craneElevate.setPower(-0.5);
+                    craneElevate.setTargetPosition((int)(craneElevate.getTargetPosition() + gamepad2.left_stick_y * -10));
+                }
+                if(gamepad2.left_stick_y >= 0 && CEAW < runtime.seconds()) {
+                    CEAW = runtime.seconds() + 0.33;
+                    craneElevate.setPower(0.2);
+                    craneElevate.setTargetPosition((int)(craneElevate.getTargetPosition() + gamepad2.left_stick_y * 10));
+                }
+                if(gamepad2.right_stick_y < 0 && CPAW < runtime.seconds()) { //Used for small lift adjustments
+                    CPAW = runtime.seconds() + 0.33;
+                    cranePitch.setPower(-0.5);
+                    cranePitch.setTargetPosition((int)(cranePitch.getTargetPosition() + gamepad2.right_stick_y * -10));
+                }
+                if(gamepad2.right_stick_y >= 0 && CPAW < runtime.seconds()) {
+                    CPAW = runtime.seconds() + 0.33;
+                    cranePitch.setPower(0.2);
+                    cranePitch.setTargetPosition((int)(cranePitch.getTargetPosition() + gamepad2.right_stick_y * 10));
+                }
             }
             
 //******************************************************************************
