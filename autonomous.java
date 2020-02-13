@@ -119,18 +119,20 @@ public class autonomous extends LinearOpMode
         runtime.reset();
         
         //Moves go here:
-        move("forwards", 2000, 0.2, 10);
-        rotate("left", 80, 0.3);
-        rotate("left", 10, 0.2);
-        move("forwards", 2000, 0.2, 10);
-        rotate("left", 80, 0.3);
-        rotate("left", 10, 0.2);
-        move("forwards", 2000, 0.2, 10);
-        rotate("left", 80, 0.3);
-        rotate("left", 10, 0.2);
-        move("forwards", 2000, 0.2, 10);
-        rotate("left", 80, 0.3);
-        rotate("left", 10, 0.2);
+        tray("up");
+        move("backwards", 2000, 0.5, 20.5);
+        crab("right", 3660, 0.5, 20.5);
+        move("backwards", 3250, 0.5, 20.15);
+        tray("down");
+        move("forwards", 6300, 0.4, 60);
+        rotate("left", 30, 0.3);
+        tray("up");
+        move("forwards", 100, 0.2, 20);
+        rotate("right", 30, 0.3);
+        crab("left", 500, 0.3, 40);
+        crab("left", 3500, 0.5, 60);
+        move("backwards", 2000, 0.5, 30.5);
+        crab("left", 2000, 0.5, 30);
     }
     
     //57 pulses per inch
@@ -265,17 +267,15 @@ public class autonomous extends LinearOpMode
     }
 
     public void tray(String position) {
-        if (position == "up"); { //traygrabber goes [position]
-            trayGrab.setPosition(0);
+        if (position == "up") { //traygrabber goes [position]
             while(!isStopRequested() && trayGrab.getPosition() != 0)
                 trayGrab.setPosition(0);
-                sleep(5000);
+            sleep(3000);
         }
-        if (position == "down"); {
-            trayGrab.setPosition(1);
+        if (position == "down") {
             while(!isStopRequested() && trayGrab.getPosition() != 1)
                 trayGrab.setPosition(1);
-                sleep(5000);
+            sleep(3000);
         }
     }
     
