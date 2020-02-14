@@ -123,26 +123,14 @@ public class autonomous extends LinearOpMode
         
         //Moves go here:
         trayGrab.setPosition(0);
-        move("backwards", 2000, 0.7, 1);
-        crab("right", 3660, 0.5, 2);
-        move("backwards", 3250, 0.7, 1.35);
-        tray("down");
-        move("forwards", 6300, 0.4, 6.5);
-        rotate("left", 30, 0.3);
-        tray("up");
-        move("forwards", 150, 0.2, 0.3);
-        rotate("right", 30, 0.3);
-        crab("left", 500, 0.3, 1);
-        move("backwards", 3500, 0.7, 2.5);
-        rotate("right", 90, 0.3);
+        move("backwards", 1000, 0.5, 2);
+        rotate("left", 90, 0.3);
         crane(0, -300, 0, -0.5);
         craneExtend.setPower(-1);
         sleep(250);
         craneExtend.setPower(0);
         crane(150, 0, 0.5, 0.2);
-        move("backwards", 2000, 0.4, 2.5);
-        
-        
+        move("backwards", 10000, 0.3, 4);
     }
     
     //57 pulses per inch
