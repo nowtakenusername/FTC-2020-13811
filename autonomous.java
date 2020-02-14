@@ -91,11 +91,13 @@ public class autonomous extends LinearOpMode
         craneExtend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         fakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         cranePitch.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        craneElevate.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         
         craneExtend.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         fakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         
         cranePitch.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        craneElevate.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         //Sets motor direction
         leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
@@ -119,20 +121,27 @@ public class autonomous extends LinearOpMode
         runtime.reset();
         
         //Moves go here:
-        tray("up");
-        move("backwards", 2000, 0.5, 20.5);
-        crab("right", 3660, 0.5, 20.5);
-        move("backwards", 3250, 0.5, 20.15);
+        trayGrab.setPosition(0);
+        move("backwards", 2000, 0.7, 1);
+        crab("right", 3660, 0.5, 2);
+        move("backwards", 3250, 0.7, 1.35);
         tray("down");
-        move("forwards", 6300, 0.4, 60);
+        move("forwards", 6300, 0.4, 6.5);
         rotate("left", 30, 0.3);
         tray("up");
-        move("forwards", 100, 0.2, 20);
+        move("forwards", 150, 0.2, 0.3);
         rotate("right", 30, 0.3);
-        crab("left", 500, 0.3, 40);
-        crab("left", 3500, 0.5, 60);
-        move("backwards", 2000, 0.5, 30.5);
-        crab("left", 2000, 0.5, 30);
+        crab("left", 500, 0.3, 1);
+        move("backwards", 3500, 0.7, 2.5);
+        rotate("right", 90, 0.3);
+        crane(0, -300, 0, -0.5);
+        craneExtend.setPower(-1);
+        sleep(250);
+        craneExtend.setPower(0);
+        crane(150, 0, 0.5, 0.2);
+        move("backwards", 2000, 0.4, 2.5);
+        
+        
     }
     
     //57 pulses per inch
@@ -270,15 +279,21 @@ public class autonomous extends LinearOpMode
         if (position == "up") { //traygrabber goes [position]
             while(!isStopRequested() && trayGrab.getPosition() != 0)
                 trayGrab.setPosition(0);
-            sleep(3000);
+            sleep(1500);
         }
         if (position == "down") {
             while(!isStopRequested() && trayGrab.getPosition() != 1)
                 trayGrab.setPosition(1);
-            sleep(3000);
+            sleep(1500);
         }
     }
-    
+    public void crane(int cranePitchPulses, int craneElevatePulses, double cranePitchPower2,  double craneElevatePower2) {
+        cranePitch.setPower(cranePitchPower2);
+        craneElevate.setPower(craneElevatePower2);
+        cranePitch.setTargetPosition(cranePitchPulses);
+        craneElevate.setTargetPosition(craneElevatePulses);
+        sleep(2500);
+    }
     public void resetMove() { //Resets encoder values and stops wheels - preps for next move
         leftBackDrive.setPower(0);
         rightBackDrive.setPower(0);
