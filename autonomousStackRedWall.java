@@ -48,9 +48,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 
-@Autonomous(name="autonomous", group="Iterative Opmode")
+@Autonomous(name="autonomousStackBlueBridge", group="Iterative Opmode")
 //@Disabled
-public class autonomous extends LinearOpMode
+public class autonomousStackBlueBridge extends LinearOpMode
 {
     //Declaring OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -132,6 +132,7 @@ public class autonomous extends LinearOpMode
         move("forwards", 150, 0.2, 0.3);
         rotate("right", 30, 0.3);
         crab("left", 500, 0.3, 1);
+        crab("left", 3500, 0.5, 4.5);
         move("backwards", 3500, 0.7, 2.5);
         rotate("right", 90, 0.3);
         crane(0, -300, 0, -0.5);
