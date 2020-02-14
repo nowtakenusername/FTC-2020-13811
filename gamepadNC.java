@@ -120,7 +120,7 @@ public class gamepadNC extends LinearOpMode {
 //******************************************************************************
             
             //Variable setup
-            //Setting up variables - many are redundant and are pending removal
+            //Setting up variables - many are redundant
             double craneExtendPower; //Crane linear actuator motor power
             double cranePitchPower; //Crane pitch motor power
             double craneElevatePower; //Crane lift motor power
