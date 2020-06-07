@@ -99,7 +99,6 @@ public class gamepadTank extends LinearOpMode {
             //Telemetry display
             telemetry.addData("Run Time:", "" + runtime.toString());
             telemetry.addData("Motor Power", "L (%.2f), R (%.2f)", gamepad1.left_stick_y, gamepad1.right_stick_y);
-            telemetry.addData("Crane Setting", "" + craneSetting);
             telemetry.update();
         }
     }
