@@ -12,9 +12,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-@TeleOp(name="gamepadTank", group="Linear Opmode")
+@TeleOp(name="gamepadNew", group="Linear Opmode")
 //@Disabled
-public class gamepadTank extends LinearOpMode {
+public class gamepadNew extends LinearOpMode {
 
     //Declaring OpMode members
     private ElapsedTime runtime = new ElapsedTime();
