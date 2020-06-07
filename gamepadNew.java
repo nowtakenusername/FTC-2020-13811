@@ -74,19 +74,18 @@ public class gamepadTank extends LinearOpMode {
 //******************************************************************************
 
             //Drive controls
-            if(!gamepad1.left_bumper && !gamepad1.right_bumper) {
-                    leftBackDrive.setPower(-gamepad1.left_stick_x);
-                    rightBackDrive.setPower(-gamepad1.right_stick_x);
-                    leftFrontDrive.setPower(-gamepad1.left_stick_x);
-                    rightFrontDrive.setPower(-gamepad1.right_stick_x);
-                }
-
-                //Crab mode
-                else if (gamepad1.left_trigger>0 || gamepad1.right_trigger>0) {
+            if (gamepad1.left_trigger>0 || gamepad1.right_trigger>0) { //Crab
                     leftBackDrive.setPower(gamepad1.left_stick_x*0.8);
                     rightBackDrive.setPower(-gamepad1.left_stick_x*0.8);
                     leftFrontDrive.setPower(-gamepad1.left_stick_x*0.8);
                     rightFrontDrive.setPower(gamepad1.left_stick_x*0.8);
+                }
+
+                else  { //Tank
+                    leftBackDrive.setPower(-gamepad1.left_stick_x);
+                    rightBackDrive.setPower(-gamepad1.right_stick_x);
+                    leftFrontDrive.setPower(-gamepad1.left_stick_x);
+                    rightFrontDrive.setPower(-gamepad1.right_stick_x);
                 }
             }
             
