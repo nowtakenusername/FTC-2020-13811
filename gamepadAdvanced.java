@@ -73,7 +73,18 @@ public class gamepadAdvanced extends LinearOpMode {
 //******************************************************************************
 
             //Drive controls
-            
+            if(gamepad1.a) {
+                    leftBackDrive.setPower(0.4);
+                    rightBackDrive.setPower(-0.6);
+                    leftFrontDrive.setPower(-0.4);
+                    rightFrontDrive.setPower(0.6);
+            }
+            else {
+                    leftBackDrive.setPower(0);
+                    rightBackDrive.setPower(0);
+                    leftFrontDrive.setPower(0);
+                    rightFrontDrive.setPower(0);
+            }
             
 //******************************************************************************
 
