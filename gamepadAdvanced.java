@@ -57,8 +57,9 @@ public class gamepadAdvanced extends LinearOpMode {
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
 
         //Variable declaration
-        driveX = 0; //Used for diagonal control, positive is forward
-        driveZ = 0; //Used for diagonal control, positive is right
+        double driveX = 0; //Used for diagonal control, positive is forward
+        double driveZ = 0; //Used for diagonal control, positive is right
+        double driveTurn = 0; //Used for turning controls
       
         telemetry.addData("Status", "Initialized");
         telemetry.update(); //Done initalizing
@@ -73,17 +74,38 @@ public class gamepadAdvanced extends LinearOpMode {
 //******************************************************************************
 
             //Drive controls
+            driveX = gamepad1.left_stick_y * 0.5;
+            driveZ = gamepad1.left_stick_x * 0.5;
+            driveTurn = gamepad1.right_stick_x * 0.5;
+            
+            leftBackDrive.setPower((driveX - driveZ) - driveTurn);
+            rightBackDrive.setPower((driveX + driveZ) + driveTurn);
+            leftFrontDrive.setPower((driveX + driveZ) - driveTurn);
+            rightFrontDrive.setPower((driveX - driveZ) + driveTurn);
+            
             if(gamepad1.a) {
-                    leftBackDrive.setPower(0.4);
-                    rightBackDrive.setPower(-0.6);
-                    leftFrontDrive.setPower(-0.4);
-                    rightFrontDrive.setPower(0.6);
+                leftBackDrive.setPower(-0.25); //back and right
+                rightBackDrive.setPower(0.75);
+                leftFrontDrive.setPower(0.75);
+                rightFrontDrive.setPower(-0.25);
             }
-            else {
-                    leftBackDrive.setPower(0);
-                    rightBackDrive.setPower(0);
-                    leftFrontDrive.setPower(0);
-                    rightFrontDrive.setPower(0);
+            else if (gamepad1.b) {
+                leftBackDrive.setPower(0.75); //back and left
+                rightBackDrive.setPower(0.25);
+                leftFrontDrive.setPower(0.25);
+                rightFrontDrive.setPower(0.75);
+            }
+            else if (gamepad1.x) {
+                leftBackDrive.setPower(0.25); //forward and left
+                rightBackDrive.setPower(-0.75);
+                leftFrontDrive.setPower(-0.75);
+                rightFrontDrive.setPower(0.25);
+            }
+            else if(gamepad1.y) {
+                leftBackDrive.setPower(-0.75); //forward and right
+                rightBackDrive.setPower(-0.25);
+                leftFrontDrive.setPower(-0.25);
+                rightFrontDrive.setPower(-0.75);
             }
             
 //******************************************************************************
@@ -100,8 +122,7 @@ public class gamepadAdvanced extends LinearOpMode {
 
             //Telemetry display
             telemetry.addData("Run Time:", "" + runtime.toString());
-            telemetry.addData("Motor Power", "L (%.2f), R (%.2f)", gamepad1.left_stick_y, gamepad1.right_stick_y);
-            telemetry.addData("Crane Setting", "" + craneSetting);
+            telemetry.addData("Motor Power", "LR (%.2f), FB (%.2f)", gamepad1.left_stick_x, gamepad1.left_stick_y);
             telemetry.update();
         }
     }
