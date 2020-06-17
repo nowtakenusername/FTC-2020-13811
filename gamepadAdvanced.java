@@ -83,31 +83,6 @@ public class gamepadAdvanced extends LinearOpMode {
             leftFrontDrive.setPower((driveX + driveZ) - driveTurn);
             rightFrontDrive.setPower((driveX - driveZ) + driveTurn);
             
-            if(gamepad1.a) {
-                leftBackDrive.setPower(-0.25); //back and right
-                rightBackDrive.setPower(0.75);
-                leftFrontDrive.setPower(0.75);
-                rightFrontDrive.setPower(-0.25);
-            }
-            else if (gamepad1.b) {
-                leftBackDrive.setPower(0.75); //back and left
-                rightBackDrive.setPower(0.25);
-                leftFrontDrive.setPower(0.25);
-                rightFrontDrive.setPower(0.75);
-            }
-            else if (gamepad1.x) {
-                leftBackDrive.setPower(0.25); //forward and left
-                rightBackDrive.setPower(-0.75);
-                leftFrontDrive.setPower(-0.75);
-                rightFrontDrive.setPower(0.25);
-            }
-            else if(gamepad1.y) {
-                leftBackDrive.setPower(-0.75); //forward and right
-                rightBackDrive.setPower(-0.25);
-                leftFrontDrive.setPower(-0.25);
-                rightFrontDrive.setPower(-0.75);
-            }
-            
 //******************************************************************************
 
             //Crane controls
