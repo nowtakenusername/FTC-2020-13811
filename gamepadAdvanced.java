@@ -50,6 +50,10 @@ public class gamepadAdvanced extends LinearOpMode {
         craneElevate.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         cranePitch.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         
+        //Testing encoder stuff
+        fakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        fakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        
         //Assigns the motors to a forward direction. Positive values in the .setPower() are forwards.
         leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
@@ -60,6 +64,8 @@ public class gamepadAdvanced extends LinearOpMode {
         double driveX = 0; //Used for diagonal control, positive is forward
         double driveZ = 0; //Used for diagonal control, positive is right
         double driveTurn = 0; //Used for turning controls
+        double speed = 0.5;
+        double speedTimer = 0;
       
         telemetry.addData("Status", "Initialized");
         telemetry.update(); //Done initalizing
@@ -73,9 +79,9 @@ public class gamepadAdvanced extends LinearOpMode {
             
 //******************************************************************************
 
-            //Drive controls
-            driveX = gamepad1.left_stick_y * 0.5;
-            driveZ = gamepad1.left_stick_x * 0.5;
+            //Drive controls\\
+            driveX = gamepad1.left_stick_y * speed;
+            driveZ = gamepad1.left_stick_x * speed;
             driveTurn = gamepad1.right_stick_x * 0.5;
             
             leftBackDrive.setPower((driveX - driveZ) - driveTurn);
@@ -83,21 +89,30 @@ public class gamepadAdvanced extends LinearOpMode {
             leftFrontDrive.setPower((driveX + driveZ) - driveTurn);
             rightFrontDrive.setPower((driveX - driveZ) + driveTurn);
             
+            //Speed controls\\
+            if(gamepad1.left_bumper && speed < 1 && speedTimer < runtime.seconds()) {
+                speed+=0.05; speedTimer = runtime.seconds() + 0.5;
+            }
+            if(gamepad1.right_bumper && speed > 0.1 && speedTimer < runtime.seconds()) {
+                speed-=0.05; speedTimer = runtime.seconds() + 0.5;
+            }
+            
 //******************************************************************************
 
-            //Crane controls
+            //Crane controls\\
             
             
 //******************************************************************************
             
-            //Servo controls
+            //Servo controls\\
             
 
 //******************************************************************************
 
-            //Telemetry display
+            //Telemetry display\\
             telemetry.addData("Run Time:", "" + runtime.toString());
             telemetry.addData("Motor Power", "LR (%.2f), FB (%.2f)", gamepad1.left_stick_x, gamepad1.left_stick_y);
+            telemetry.addData("Encoder ", fakeMotor.getCurrentPosition());
             telemetry.update();
         }
     }
