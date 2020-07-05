@@ -35,14 +35,14 @@ public class ReichenMovesRobot extends LinearOpMode {
                 if(gamepad1.left_stick_y > 0.1){
                     leftBack.setPower(-.5);
                     rightBack.setPower(-.5);
-                    rightFront.setPower(.5);
-                    leftFront.setPower(.5);
+                    rightFront.setPower(-.5);
+                    leftFront.setPower(-.5);
                 }else
                 if(gamepad1.left_stick_y < -0.1){
                     leftBack.setPower(.5);
                     rightBack.setPower(.5);
-                    rightFront.setPower(-.5);
-                    leftFront.setPower(-.5);
+                    rightFront.setPower(.5);
+                    leftFront.setPower(.5);
                 }else
                 if(gamepad1.right_stick_x < -0.1){
                     leftBack.setPower(-.5);
@@ -72,26 +72,26 @@ public class ReichenMovesRobot extends LinearOpMode {
             if(gamepad1.left_stick_y > 0.1){
                 leftBack.setPower(-.5);
                 rightBack.setPower(-.5);
-                rightFront.setPower(.5);
-                leftFront.setPower(.5);
+                rightFront.setPower(-.5);
+                leftFront.setPower(-.5);
             }else
             if(gamepad1.left_stick_y < -0.1){
                 leftBack.setPower(.5);
                 rightBack.setPower(.5);
-                rightFront.setPower(-.5);
-                leftFront.setPower(-.5);
+                rightFront.setPower(.5);
+                leftFront.setPower(.5);
             }else
             if(gamepad1.right_stick_x < -0.1){
-                leftBack.setPower(.5);
-                rightBack.setPower(-.5);
-                rightFront.setPower(.5);
-                leftFront.setPower(-.5);
-            }else
-            if(gamepad1.right_stick_x > 0.1){
                 leftBack.setPower(-.5);
                 rightBack.setPower(.5);
                 rightFront.setPower(-.5);
                 leftFront.setPower(.5);
+            }else
+            if(gamepad1.right_stick_x > 0.1){
+                leftBack.setPower(.5);
+                rightBack.setPower(-.5);
+                rightFront.setPower(.5);
+                leftFront.setPower(-.5);
             }else
             if(gamepad1.right_stick_x == 0){
                 leftBack.setPower(0);
