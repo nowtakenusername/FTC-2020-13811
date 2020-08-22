@@ -27,9 +27,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// Directory
 package org.firstinspires.ftc.robotcontroller.external.samples;
 
-
+// Imports
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
@@ -47,123 +48,111 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-
+// 13811 High Voltage Aledo, Texas
 @Autonomous(name="autonomous", group="Iterative Opmode")
-//@Disabled
+// @Disabled
 public class autonomous extends LinearOpMode
 {
-    //Declaring OpMode members.
+    // Declaring OpMode objects...
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftBackDrive, rightBackDrive, leftFrontDrive, rightFrontDrive;
     private DcMotor craneExtend, cranePitch, craneElevate, fakeMotor;
     private Servo craneGrab, trayGrab, craneGrabAttitude, flipperLeft, flipperRight;
     private BNO055IMU imu;
     
-    //Setting up variables
+    // Setting up variables...
     Orientation lastAngles = new Orientation();
     double globalAngle;
     double heading = 0;
     
     @Override
-    public void runOpMode() {
-        //The below lines of code initialize the hardware variables to be used later on (such as motors and servos)
+    public void runOpMode() { // 13811 Aledo, Texas
+        // Assign the hardwareMap to be used later on
         leftBackDrive  = hardwareMap.get(DcMotor.class, "left_back_drive");
         rightBackDrive = hardwareMap.get(DcMotor.class, "right_back_drive");
         leftFrontDrive = hardwareMap.get(DcMotor.class, "left_front_drive");
         rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
-        craneExtend = hardwareMap.get(DcMotor.class, "craneExtend"); //port 0, hub2
-        cranePitch = hardwareMap.get(DcMotor.class, "cranePitch"); //port 1, hub2
-        craneElevate = hardwareMap.get(DcMotor.class, "craneElevate"); //port 2, hub2
-        craneGrab = hardwareMap.get(Servo.class, "craneGrab"); //port 0, servo
-        trayGrab = hardwareMap.get(Servo.class, "trayGrab"); //port 1, servo
-        fakeMotor = hardwareMap.get(DcMotor.class, "fakeMotor"); //port 3, encoder
+        craneExtend = hardwareMap.get(DcMotor.class, "craneExtend");
+        fakeMotor = hardwareMap.get(DcMotor.class, "fakeMotor");
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         
-        //Setting up imu parameters
+        // Setting up imu parameters and config...
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.mode = BNO055IMU.SensorMode.IMU;
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         parameters.loggingEnabled = false;
-
     
-        //this sets each motor to be run using encoders
+        // Set up odometry wheels
         craneExtend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         fakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        cranePitch.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        craneElevate.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        
         craneExtend.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         fakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         
-        cranePitch.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        craneElevate.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        //Sets motor direction
+        // Set motor directions
         leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
         leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
-
-        //initialize imu
+        
+        // Initialize the imu...
         imu.initialize(parameters);
-
+        // and calibrate the gyro...
         telemetry.addData("Mode", "calibrating...");
         telemetry.update();
         while (!isStopRequested() && !imu.isGyroCalibrated())
         { sleep(50); idle(); }
+        // and done.
         
-        //Tell the driver that initialization is complete.
+        // Telemetry displays that initialization is complete.
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
         waitForStart();
         runtime.reset();
         
-        //Moves go here:
-        trayGrab.setPosition(0);
-        move("backwards", 2000, 0.7, 1);
-        crab("right", 3660, 0.5, 2);
-        move("backwards", 3250, 0.7, 1.35);
-        tray("down");
-        move("forwards", 6300, 0.4, 6.5);
-        rotate("left", 30, 0.3);
-        tray("up");
-        move("forwards", 150, 0.2, 0.3);
-        rotate("right", 30, 0.3);
-        crab("left", 500, 0.3, 1);
-        move("backwards", 3500, 0.7, 2.5);
-        rotate("right", 90, 0.3);
-        crane(0, -300, 0, -0.5);
-        craneExtend.setPower(-1);
-        sleep(250);
-        craneExtend.setPower(0);
-        crane(150, 0, 0.5, 0.2);
-        move("backwards", 2000, 0.4, 2.5);
+        // 13811 High Voltage Aledo, Texas
+        // Moves go here:
+        // and REMEMBER TO FOLLOW SYNTAX!!
         
+        move("forward", 4250, 0.5, 10);
+        rotate("left", 85, 0.3);
+        rotate("left", 5, 0.1);
+        move("forward", 4250, 0.5, 10);
+        rotate("left", 85, 0.3);
+        rotate("left", 5, 0.1);
+        move("forward", 4250, 0.5, 10);
+        rotate("left", 85, 0.3);
+        rotate("left", 5, 0.1);
+        move("forward", 4250, 0.5, 10);
+        rotate("left", 85, 0.3);
+        rotate("left", 5, 0.1);
         
+        // End of moves section.
     }
     
-    //57 pulses per inch
-    public void move(String direction, int pulses, double power, double timeout) { //move [direction] [pulse] pulses at [power] power
+    // 13811 High Voltage Aledo, Texas
+    public void move(String direction, int pulses, double power, double timeout) { 
+        // Move [direction] [pulse] pulses at [power] power.
         double moveStart = runtime.seconds();
-        if(direction == "forwards") { //move forwards {
-            leftBackDrive.setPower(-power);
+        if(direction == "forward") { // Move forward 
+            leftBackDrive.setPower(-power); // Yes, forward is backward...
             rightBackDrive.setPower(-power);
             leftFrontDrive.setPower(-power);
             rightFrontDrive.setPower(-power);
-            while(!isStopRequested() && -pulses < craneExtend.getCurrentPosition() && timeout + moveStart > runtime.seconds()) {
-                if (getAngle() > heading) {
-                    leftBackDrive.setPower(-power-0.1);
-                    rightBackDrive.setPower(-power+0.1);
-                    leftFrontDrive.setPower(-power-0.1);
-                    rightFrontDrive.setPower(-power+0.1);
+            while(!isStopRequested() && pulses > craneExtend.getCurrentPosition() && timeout + moveStart > runtime.seconds()) {
+                // If we are NOT stopped, and desired pulses are more than what our wheels register, we have NOT exceeded our timeout, then continue.
+                if (getAngle() > heading) { // Very basic correction segment.
+                    leftBackDrive.setPower(-power-0.05);
+                    rightBackDrive.setPower(-power+0.05);
+                    leftFrontDrive.setPower(-power-0.05);
+                    rightFrontDrive.setPower(-power+0.05);
                 }
                 if (getAngle() < heading) {
-                    leftBackDrive.setPower(-power+0.1);
-                    rightBackDrive.setPower(-power-0.1);
-                    leftFrontDrive.setPower(-power+0.1);
-                    rightFrontDrive.setPower(-power-0.1);
+                    leftBackDrive.setPower(-power+0.05);
+                    rightBackDrive.setPower(-power-0.05);
+                    leftFrontDrive.setPower(-power+0.05);
+                    rightFrontDrive.setPower(-power-0.05);
                 }
                 else {
                     leftBackDrive.setPower(-power);
@@ -171,6 +160,7 @@ public class autonomous extends LinearOpMode
                     leftFrontDrive.setPower(-power);
                     rightFrontDrive.setPower(-power);
                 }
+                // Forcibly update telemetry in the move.
                 telemetry.addData("Encoder 1", craneExtend.getCurrentPosition());
                 telemetry.addData("Encoder 2", fakeMotor.getCurrentPosition());
                 telemetry.addData("Degree" , getAngle());
@@ -178,13 +168,14 @@ public class autonomous extends LinearOpMode
                 telemetry.update();
             }
         }
-        else if(direction == "backwards") { //move backwards
-            leftBackDrive.setPower(power);
+        else if(direction == "backward") { // Move backward
+            leftBackDrive.setPower(power); // Once again, backward is positive power and vice versa...
             rightBackDrive.setPower(power);
             leftFrontDrive.setPower(power);
             rightFrontDrive.setPower(power);
-            while(!isStopRequested() && pulses > craneExtend.getCurrentPosition() && timeout + moveStart > runtime.seconds()) {
-                if (getAngle() > heading) {
+            while(!isStopRequested() && -pulses < craneExtend.getCurrentPosition() && timeout + moveStart > runtime.seconds()) {
+                // If we are NOT stopped, and negative desired pulses are LESS than what our wheels register, we have NOT exceeded our timeout, then continue.
+                if (getAngle() > heading) { // Very basic correction segment.
                     leftBackDrive.setPower(power-0.1);
                     rightBackDrive.setPower(power);
                     leftFrontDrive.setPower(power-0.1);
@@ -202,6 +193,7 @@ public class autonomous extends LinearOpMode
                     leftFrontDrive.setPower(power);
                     rightFrontDrive.setPower(power);
                 }
+                // Forcibly update telemetry in the move.
                 telemetry.addData("Encoder 1", craneExtend.getCurrentPosition());
                 telemetry.addData("Encoder 2", fakeMotor.getCurrentPosition());
                 telemetry.addData("Degree" , getAngle());
@@ -209,48 +201,68 @@ public class autonomous extends LinearOpMode
                 telemetry.update();
             }
         }
-        resetMove();
+        resetMove(); // Reset our odometry and stop the wheels.
     }
 
-    public void crab(String direction, int pulses, double power, double timeout) { //crabs [direction] for [pulse] pulses at [power] power
+    public void strafe(String direction, int pulses, double power, double timeout) { 
+        // Strafe [direction] for [pulse] pulses at [power] power
         double moveStart = runtime.seconds();
-        if (direction == "right") { //crab right
-            leftBackDrive.setPower(power);
+        if (direction == "right") { // Strafe right
+            leftBackDrive.setPower(power); //Set the power like this...
             rightBackDrive.setPower(-power);
             leftFrontDrive.setPower(-power);
             rightFrontDrive.setPower(power);
             while (!isStopRequested() && -pulses < fakeMotor.getCurrentPosition() && timeout + moveStart > runtime.seconds()) {
-                telemetry.addData("Encoder 1", craneExtend.getCurrentPosition());
+                // If we are NOT stopped, and negative desired pulses are LESS than what our wheels register, we have NOT exceeded our timeout, then continue.
+                telemetry.addData("Encoder 1", craneExtend.getCurrentPosition()); // FORCIBLY update telemetry in the move.
                 telemetry.addData("Encoder 2", fakeMotor.getCurrentPosition());
                 telemetry.addData("Degree" , getAngle());
                 telemetry.addData("Heading" , heading);
-                telemetry.update();
+                telemetry.update(); 
             }
         }
-        else if (direction == "left") { //crab left
+        else if (direction == "left") { //move the robot like a crab to the left
             leftBackDrive.setPower(-power);
             rightBackDrive.setPower(power);
             leftFrontDrive.setPower(power);
             rightFrontDrive.setPower(-power);
             while(!isStopRequested() && pulses > fakeMotor.getCurrentPosition() && timeout + moveStart > runtime.seconds()) {
-                telemetry.addData("Encoder 1", craneExtend.getCurrentPosition());
+                telemetry.addData("Encoder 1", craneExtend.getCurrentPosition()); // FORCIBLY update telemetry in the move.
                 telemetry.addData("Encoder 2", fakeMotor.getCurrentPosition());
                 telemetry.addData("Degree" , getAngle());
                 telemetry.addData("Heading" , heading);
                 telemetry.update();
             }
         }
-        resetMove();
+        resetMove(); // Reset our odometry and stop the wheels.
     }
     
-    public void rotate(String direction, double degrees, double power) { //rotates [direction] [degrees] degrees at [power] power
-        if (direction == "left") { //rotate left
-            heading += degrees;
+    // 13811 High Voltage Aledo, Texas
+    // This will allow the robot to move DIAGONALLY in autonomous, rough stuff to do but it can be done
+    // public void move(double driveX, double driveY, int pulses, double power, double timeout) { // Set a [vector] and move [pulse] pulses at [power] power
+    //     double moveStart = runtime.seconds(); // Used for the timeout variable.
+    //     // Set the vector!
+    //     //BUT LATER
+        
+    //     double speed = 0.5;
+    //     leftBackDrive.setPower((driveX - driveZ) - driveTurn);
+    //     rightBackDrive.setPower((driveX + driveZ) + driveTurn);
+    //     leftFrontDrive.setPower((driveX + driveZ) - driveTurn);
+    //     rightFrontDrive.setPower((driveX - driveZ) + driveTurn);
+    //     }
+    //     resetMove();
+    // }
+    
+    // 13811 High Voltage Aledo, Texas
+    public void rotate(String direction, double degrees, double power) { 
+        // Rotate [direction] [degrees] degrees at [power] power
+        if (direction == "left") { // Rotate left
+            heading += degrees; // Setting a heading for correction purposes
             leftBackDrive.setPower(power);
             rightBackDrive.setPower(-power);
             leftFrontDrive.setPower(power);
             rightFrontDrive.setPower(-power);
-            while (!isStopRequested() && getAngle() < heading) {
+            while (!isStopRequested() && getAngle() < heading) { // FORCIBLY update telemetry
                 telemetry.addData("Encoder 1", craneExtend.getCurrentPosition());
                 telemetry.addData("Encoder 2", fakeMotor.getCurrentPosition());
                 telemetry.addData("Degree" , getAngle());
@@ -258,7 +270,7 @@ public class autonomous extends LinearOpMode
                 telemetry.update();
             }
         }
-        if (direction == "right") { //rotate right
+        if (direction == "right") { // Rotate right
             heading -= degrees;
             leftBackDrive.setPower(-power);
             rightBackDrive.setPower(power);
@@ -272,44 +284,29 @@ public class autonomous extends LinearOpMode
                 telemetry.update();
             }
         }
-        resetMove();
+        resetMove();// Reset our odometry and stop the wheels.
     }
-
-    public void tray(String position) {
-        if (position == "up") { //traygrabber goes [position]
-            while(!isStopRequested() && trayGrab.getPosition() != 0)
-                trayGrab.setPosition(0);
-            sleep(1500);
-        }
-        if (position == "down") {
-            while(!isStopRequested() && trayGrab.getPosition() != 1)
-                trayGrab.setPosition(1);
-            sleep(1500);
-        }
-    }
-    public void crane(int cranePitchPulses, int craneElevatePulses, double cranePitchPower2,  double craneElevatePower2) {
-        cranePitch.setPower(cranePitchPower2);
-        craneElevate.setPower(craneElevatePower2);
-        cranePitch.setTargetPosition(cranePitchPulses);
-        craneElevate.setTargetPosition(craneElevatePulses);
-        sleep(2500);
-    }
-    public void resetMove() { //Resets encoder values and stops wheels - preps for next move
-        leftBackDrive.setPower(0);
+    
+    // 13811 High Voltage Aledo, Texas
+    public void resetMove() { // Reset encoder values and stop wheels
+        leftBackDrive.setPower(0); // Zero them out
         rightBackDrive.setPower(0);
         leftFrontDrive.setPower(0);
         rightFrontDrive.setPower(0);
-        sleep(100);
-        craneExtend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        sleep(100); // Pause a bit
+        craneExtend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // Reset the encoders.
         fakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
     
-    private void resetAngle() { //Resets angle heading
+    // 13811 High Voltage Aledo, Texas
+    private void resetAngle() { // Resets angle heading
         lastAngles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         globalAngle = 0;
     }
     
-    private double getAngle() { //Converts imu z-axis heading into a proper format
+    // 13811 High Voltage Aledo, Texas
+    private double getAngle() { // Converts imu z-axis heading into a proper format
+    // NOTE: I did copy this from the FTC website. No clue how it works, but it does!
         Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         double deltaAngle = angles.firstAngle - lastAngles.firstAngle;
 
@@ -322,4 +319,4 @@ public class autonomous extends LinearOpMode
         lastAngles = angles;
         return globalAngle;
     }
-}
+} // END
