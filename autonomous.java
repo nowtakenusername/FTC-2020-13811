@@ -27,8 +27,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+//top
 // Directory
-package org.firstinspires.ftc.robotcontroller.external.samples;
+package org.firstinspires.ftc.teamcode;
 
 // Imports
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -48,7 +49,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-// 13811 High Voltage Aledo, Texas
 @Autonomous(name="autonomous", group="Iterative Opmode")
 // @Disabled
 public class autonomous extends LinearOpMode
@@ -57,14 +57,14 @@ public class autonomous extends LinearOpMode
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftBackDrive, rightBackDrive, leftFrontDrive, rightFrontDrive;
     private DcMotor craneExtend, cranePitch, craneElevate, fakeMotor;
-    private Servo craneGrab, trayGrab, craneGrabAttitude, flipperLeft, flipperRight;
+    private Servo ringFeeler, goalClamp, goalDeploy, flipperLeft, flipperRight;
     private BNO055IMU imu;
     
     // Setting up variables...
     Orientation lastAngles = new Orientation();
     double globalAngle;
     double heading = 0;
-    
+    public double feelState = 1;
     @Override
     public void runOpMode() { // 13811 Aledo, Texas
         // Assign the hardwareMap to be used later on
@@ -72,8 +72,11 @@ public class autonomous extends LinearOpMode
         rightBackDrive = hardwareMap.get(DcMotor.class, "right_back_drive");
         leftFrontDrive = hardwareMap.get(DcMotor.class, "left_front_drive");
         rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
-        craneExtend = hardwareMap.get(DcMotor.class, "craneExtend");
-        fakeMotor = hardwareMap.get(DcMotor.class, "fakeMotor");
+        craneExtend = hardwareMap.get(DcMotor.class, "craneExtend"); //encoder stuff 1
+        fakeMotor = hardwareMap.get(DcMotor.class, "fakeMotor"); //encoder stuff 2
+        ringFeeler = hardwareMap.get(Servo.class, "ringFeeler");
+        goalClamp = hardwareMap.get(Servo.class, "goalClamp");
+        goalDeploy = hardwareMap.get(Servo.class, "goalDeploy");
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         
         // Setting up imu parameters and config...
@@ -110,29 +113,79 @@ public class autonomous extends LinearOpMode
 
         waitForStart();
         runtime.reset();
-        
-        // 13811 High Voltage Aledo, Texas
+        //You a wizard Harri(son)
         // Moves go here:
         // and REMEMBER TO FOLLOW SYNTAX!!
+        move("forward", 47*40, 0.5, 100);
+        feel();
         
-        move("forward", 4250, 0.5, 10);
-        rotate("left", 85, 0.3);
-        rotate("left", 5, 0.1);
-        move("forward", 4250, 0.5, 10);
-        rotate("left", 85, 0.3);
-        rotate("left", 5, 0.1);
-        move("forward", 4250, 0.5, 10);
-        rotate("left", 85, 0.3);
-        rotate("left", 5, 0.1);
-        move("forward", 4250, 0.5, 10);
-        rotate("left", 85, 0.3);
-        rotate("left", 5, 0.1);
+        if(feelState == 0) { //no donuts :(
+            move("forward", 38 * 47,0.5, 100);
+            move("right", 22 * 47,0.5, 100);
+            drop();
+            move("left", 22 * 47,0.5, 100);
+            move("backward", 15 * 47,0.5, 100);
+        }
+        else if(feelState == 4) { //four donut
+            move("forward", 83 * 47,0.5, 100);
+            move("right", 22 * 47,0.5, 100);
+            drop();
+            move("left", 22 * 47,0.5, 100);
+            move("backward", 60 * 47,0.5, 100);
+        }
+        else { //one donut
+          move("forward", 63 * 47,0.5, 100);
+            drop();
+            move("backward", 40 * 47,0.5, 100);
+        }
         
-        // End of moves section.
+        
+        move("forward", 23 * 47, 0.5, 100);
+        //remove the line above once the if statements work
+        move("right", 12 * 47,0.5, 100);
+        shoot("high");
+        shoot("high");
+        shoot("high");
+        move("forward", 47*10,0.5,100);
     }
     
-    // 13811 High Voltage Aledo, Texas
-    public void move(String direction, int pulses, double power, double timeout) { 
+    public void drop(){ //drop off the wobble goal
+        goalDeploy.setPosition(1);
+        sleep(1000); // 1 seconds
+        goalClamp.setPosition(1);
+        sleep(50);
+        goalDeploy.setPosition(0);
+        sleep(1000);
+        goalClamp.setPosition(0);
+    }
+    public void shoot(String goal){ //shoot the rings at a goal
+        if(goal == "low") { //shoot for the low goal
+            
+        }
+        else if(goal == "mid") { //shoot for mid goal
+            
+        }
+        else if(goal == "high"){//shoot for high goal
+            
+        }
+        else { //shoot for power shot targets
+          
+        }
+    }
+    public void feel(){ // feel amount of rings and change feelState
+        ringFeeler.setPosition(0.9); //we're going down
+        if(ringFeeler.getPosition() > 0.5 && ringFeeler.getPosition() < 0.7) { //four rings
+            feelState = 4;
+        }
+        else if(ringFeeler.getPosition() >= 0.7 && ringFeeler.getPosition() < 0.8) { //one ring
+            feelState = 1;
+        }
+        else { //zero rings
+            feelState = 0;
+        }
+        ringFeeler.setPosition(0); //back up please
+    }
+    public void move(String direction, int pulses, double power, double timeout) { //NEED WORK ON MOVING DIAGONALLY OR JUST DO CRAB & MOVE
         // Move [direction] [pulse] pulses at [power] power.
         double moveStart = runtime.seconds();
         if(direction == "forward") { // Move forward 
@@ -201,9 +254,36 @@ public class autonomous extends LinearOpMode
                 telemetry.update();
             }
         }
+        else if (direction == "right") { // Move right
+            leftBackDrive.setPower(power); //Set the power like this...
+            rightBackDrive.setPower(-power);
+            leftFrontDrive.setPower(-power);
+            rightFrontDrive.setPower(power);
+            while (!isStopRequested() && -pulses < fakeMotor.getCurrentPosition() && timeout + moveStart > runtime.seconds()) {
+                // If we are NOT stopped, and negative desired pulses are LESS than what our wheels register, we have NOT exceeded our timeout, then continue.
+                telemetry.addData("Encoder 1", craneExtend.getCurrentPosition()); // FORCIBLY update telemetry in the move.
+                telemetry.addData("Encoder 2", fakeMotor.getCurrentPosition());
+                telemetry.addData("Degree" , getAngle());
+                telemetry.addData("Heading" , heading);
+                telemetry.update(); 
+            }
+        }
+        else if (direction == "left") { //Move left
+            leftBackDrive.setPower(-power);
+            rightBackDrive.setPower(power);
+            leftFrontDrive.setPower(power);
+            rightFrontDrive.setPower(-power);
+            while(!isStopRequested() && pulses > fakeMotor.getCurrentPosition() && timeout + moveStart > runtime.seconds()) {
+                telemetry.addData("Encoder 1", craneExtend.getCurrentPosition()); // FORCIBLY update telemetry in the move.
+                telemetry.addData("Encoder 2", fakeMotor.getCurrentPosition());
+                telemetry.addData("Degree" , getAngle());
+                telemetry.addData("Heading" , heading);
+                telemetry.update();
+            }
+        }
         resetMove(); // Reset our odometry and stop the wheels.
     }
-
+    /*
     public void strafe(String direction, int pulses, double power, double timeout) { 
         // Strafe [direction] for [pulse] pulses at [power] power
         double moveStart = runtime.seconds();
@@ -236,8 +316,7 @@ public class autonomous extends LinearOpMode
         }
         resetMove(); // Reset our odometry and stop the wheels.
     }
-    
-    // 13811 High Voltage Aledo, Texas
+    */
     // This will allow the robot to move DIAGONALLY in autonomous, rough stuff to do but it can be done
     // public void move(double driveX, double driveY, int pulses, double power, double timeout) { // Set a [vector] and move [pulse] pulses at [power] power
     //     double moveStart = runtime.seconds(); // Used for the timeout variable.
@@ -253,11 +332,10 @@ public class autonomous extends LinearOpMode
     //     resetMove();
     // }
     
-    // 13811 High Voltage Aledo, Texas
     public void rotate(String direction, double degrees, double power) { 
         // Rotate [direction] [degrees] degrees at [power] power
         if (direction == "left") { // Rotate left
-            heading += degrees; // Setting a heading for correction purposes
+            heading += degrees; //(h = h + d) Setting a heading for correction purposes
             leftBackDrive.setPower(power);
             rightBackDrive.setPower(-power);
             leftFrontDrive.setPower(power);
@@ -286,8 +364,7 @@ public class autonomous extends LinearOpMode
         }
         resetMove();// Reset our odometry and stop the wheels.
     }
-    
-    // 13811 High Voltage Aledo, Texas
+
     public void resetMove() { // Reset encoder values and stop wheels
         leftBackDrive.setPower(0); // Zero them out
         rightBackDrive.setPower(0);
@@ -297,14 +374,12 @@ public class autonomous extends LinearOpMode
         craneExtend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // Reset the encoders.
         fakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
-    
-    // 13811 High Voltage Aledo, Texas
+
     private void resetAngle() { // Resets angle heading
         lastAngles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         globalAngle = 0;
     }
     
-    // 13811 High Voltage Aledo, Texas
     private double getAngle() { // Converts imu z-axis heading into a proper format
     // NOTE: I did copy this from the FTC website. No clue how it works, but it does!
         Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
@@ -319,4 +394,4 @@ public class autonomous extends LinearOpMode
         lastAngles = angles;
         return globalAngle;
     }
-} // END
+} // The END
