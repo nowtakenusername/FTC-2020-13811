@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.robotcontroller.external.samples;
+package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -9,16 +9,16 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
-@TeleOp(name="gamepadAdvanced", group="Linear Opmode")
+@TeleOp(name="gamepad", group="Linear Opmode")
 //@Disabled
-public class gamepadAdvanced extends LinearOpMode {
+public class gamepad extends LinearOpMode {
 
     // Initial creation of objects for motors and servos. They are assigned to their ports below.
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftBackDrive, rightBackDrive, rightFrontDrive, leftFrontDrive;
     // private DcMotor craneExtend, cranePitch, craneElevate, fakeMotor;
     // private Servo craneGrab, trayGrab, craneGrabAttitude, flipperLeft, flipperRight;
-
+    private Servo goalClamp, goalDeploy;
     public void runOpMode() {
         
 //******************************************************************************
@@ -29,6 +29,8 @@ public class gamepadAdvanced extends LinearOpMode {
         rightBackDrive = hardwareMap.get(DcMotor.class, "right_back_drive"); //port 1, hub2
         leftFrontDrive = hardwareMap.get(DcMotor.class, "left_front_drive"); //port 0, hub1
         rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive"); //port !, hub1
+        goalClamp = hardwareMap.get(Servo.class, "goalClamp");
+        goalDeploy = hardwareMap.get(Servo.class, "goalDeploy");
         
         // Disabled for now, this is legacy content
         // craneExtend = hardwareMap.get(DcMotor.class, "craneExtend"); //port 0, hub2
@@ -85,7 +87,7 @@ public class gamepadAdvanced extends LinearOpMode {
         while (opModeIsActive()) {
             
 //******************************************************************************
-
+            
             // Drive controls \\
             driveX = gamepad1.left_stick_y * speed;
             driveZ = gamepad1.left_stick_x * speed;
@@ -104,6 +106,19 @@ public class gamepadAdvanced extends LinearOpMode {
                 speed-=0.05; speedTimer = runtime.seconds() + 0.5;
             }
             
+//*****************************************************************************
+            //wobble goal grabber commands
+            
+            if(gamepad1.x && goalDeploy.getPosition() > 0.5){//toggles wobble goal grabber with X
+                goalDeploy.setPosition(1);
+                sleep(1000); // 1 seconds
+                goalClamp.setPosition(1);
+            }
+            if(gamepad1.x && goalDeploy.getPosition() < 0.5){//toggles wobble goal grabber with X
+                goalDeploy.setPosition(0);
+                sleep(1000);
+                goalClamp.setPosition(0);
+            }
 //******************************************************************************
 
             // Crane controls \\
@@ -112,7 +127,9 @@ public class gamepadAdvanced extends LinearOpMode {
 //******************************************************************************
             
             // Servo controls \\
-            
+            //if(gamepad2.down) {
+                
+            //}
 
 //******************************************************************************
 
