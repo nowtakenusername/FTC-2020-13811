@@ -72,10 +72,10 @@ public class autonomous extends LinearOpMode
         rightBackDrive = hardwareMap.get(DcMotor.class, "right_back_drive");
         leftFrontDrive = hardwareMap.get(DcMotor.class, "left_front_drive");
         rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
-        craneExtend = hardwareMap.get(DcMotor.class, "craneExtend"); //encoder stuff 1
-        fakeMotor = hardwareMap.get(DcMotor.class, "fakeMotor"); //encoder stuff 2
-        ringFeeler = hardwareMap.get(Servo.class, "ringFeeler");
-        goalClamp = hardwareMap.get(Servo.class, "goalClamp");
+        craneExtend = hardwareMap.get(DcMotor.class, "craneExtend"); // control hub port 0, motor encoder
+        fakeMotor = hardwareMap.get(DcMotor.class, "fakeMotor"); // control hub port 1, motor encoder
+        ringFeeler = hardwareMap.get(Servo.class, "ringFeeler"); // control hub port 0
+        goalClamp = hardwareMap.get(Servo.class, "goalClamp"); // control hub 
         goalDeploy = hardwareMap.get(Servo.class, "goalDeploy");
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         
