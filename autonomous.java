@@ -1,32 +1,3 @@
-/* Copyright (c) 2017 FIRST. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted (subject to the limitations in the disclaimer below) provided that
- * the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright notice, this list
- * of conditions and the following disclaimer.
- *
- * Redistributions in binary form must reproduce the above copyright notice, this
- * list of conditions and the following disclaimer in the documentation and/or
- * other materials provided with the distribution.
- *
- * Neither the name of FIRST nor the names of its contributors may be used to endorse or
- * promote products derived from this software without specific prior written permission.
- *
- * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS
- * LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 //top
 // Directory
 package org.firstinspires.ftc.teamcode;
@@ -56,8 +27,8 @@ public class autonomous extends LinearOpMode
     // Declaring OpMode objects...
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftBackDrive, rightBackDrive, leftFrontDrive, rightFrontDrive;
-    private DcMotor craneExtend, cranePitch, craneElevate, fakeMotor;
-    private Servo ringFeeler, goalClamp, goalDeploy, flipperLeft, flipperRight;
+    private DcMotor launcherLeft, launcherRight, launcherElevate, conveyorDrive;
+    private Servo ringFeeler, goalClamp, goalDeploy, conveyorLeft, conveyorRight;
     private BNO055IMU imu;
     
     // Setting up variables...
@@ -66,18 +37,22 @@ public class autonomous extends LinearOpMode
     double heading = 0;
     public double feelState = 1;
     @Override
-    public void runOpMode() { // 13811 Aledo, Texas
+    public void runOpMode() {
         // Assign the hardwareMap to be used later on
-        leftBackDrive  = hardwareMap.get(DcMotor.class, "left_back_drive");
-        rightBackDrive = hardwareMap.get(DcMotor.class, "right_back_drive");
-        leftFrontDrive = hardwareMap.get(DcMotor.class, "left_front_drive");
-        rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
-        craneExtend = hardwareMap.get(DcMotor.class, "craneExtend"); // control hub port 0, motor encoder
-        fakeMotor = hardwareMap.get(DcMotor.class, "fakeMotor"); // control hub port 1, motor encoder
-        ringFeeler = hardwareMap.get(Servo.class, "ringFeeler"); // control hub port 0
-        goalClamp = hardwareMap.get(Servo.class, "goalClamp"); // control hub 
-        goalDeploy = hardwareMap.get(Servo.class, "goalDeploy");
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        leftBackDrive  = hardwareMap.get(DcMotor.class, "left_back_drive"); // expansion hub port 0
+        rightBackDrive = hardwareMap.get(DcMotor.class, "right_back_drive"); // expansion hub port 1
+        leftFrontDrive = hardwareMap.get(DcMotor.class, "left_front_drive"); // control hub port 0
+        rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive"); // control hub port 1
+        launcherLeft = hardwareMap.get(DcMotor.class, "launcherLeft"); // control hub port 2
+        launcherRight = hardwareMap.get(DcMotor.class, "launcherRight"); // control hub port 3
+        launcherElevate = hardwareMap.get(DcMotor.class, "launcherElevate"); // expansion hub port 2
+        conveyorDrive = hardwareMap.get(DcMotor.class, "conveyorDrive"); // expansion hub port 3
+        ringFeeler = hardwareMap.get(Servo.class, "ringFeeler"); // control hub servo port 0
+        goalClamp = hardwareMap.get(Servo.class, "goalClamp"); // control hub servo port 2
+        goalDeploy = hardwareMap.get(Servo.class, "goalDeploy"); // control hub servo port 3
+        conveyorLeft = hardwareMap.get(Servo.class, "conveyorLeft"); // expansion hub servo port 0
+        conveyorRight = hardwareMap.get(Servo.class, "conveyorRight"); // expansion hub servo port 1
+        imu = hardwareMap.get(BNO055IMU.class, "imu"); // core internal module in control hub
         
         // Setting up imu parameters and config...
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -87,16 +62,18 @@ public class autonomous extends LinearOpMode
         parameters.loggingEnabled = false;
     
         // Set up odometry wheels
-        craneExtend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        fakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        craneExtend.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        fakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        launcherLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // yes, we use the launcher rollers as our encoder port donors...
+        launcherRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        launcherLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        launcherRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         
         // Set motor directions
         leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
         leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
+        launcherLeft.setDirection(DcMotor.Direction.FORWARD);
+        launcherRight.setDirection(DcMotor.Direction.REVERSE);
         
         // Initialize the imu...
         imu.initialize(parameters);
@@ -113,7 +90,7 @@ public class autonomous extends LinearOpMode
 
         waitForStart();
         runtime.reset();
-        //You a wizard Harri(son)
+        // You a wizard Harri(son) <- comedian right here
         // Moves go here:
         // and REMEMBER TO FOLLOW SYNTAX!!
         move("forward", 47*40, 0.5, 100);
@@ -152,11 +129,11 @@ public class autonomous extends LinearOpMode
     public void drop(){ //drop off the wobble goal
         goalDeploy.setPosition(1);
         sleep(1000); // 1 seconds
-        goalClamp.setPosition(1);
+        goalClamp.setPosition(0);
         sleep(50);
         goalDeploy.setPosition(0);
         sleep(1000);
-        goalClamp.setPosition(0);
+        goalClamp.setPosition(1);
     }
     public void shoot(String goal){ //shoot the rings at a goal
         if(goal == "low") { //shoot for the low goal
@@ -193,7 +170,7 @@ public class autonomous extends LinearOpMode
             rightBackDrive.setPower(-power);
             leftFrontDrive.setPower(-power);
             rightFrontDrive.setPower(-power);
-            while(!isStopRequested() && pulses > craneExtend.getCurrentPosition() && timeout + moveStart > runtime.seconds()) {
+            while(!isStopRequested() && pulses > launcherLeft.getCurrentPosition() && timeout + moveStart > runtime.seconds()) { // funny logic
                 // If we are NOT stopped, and desired pulses are more than what our wheels register, we have NOT exceeded our timeout, then continue.
                 if (getAngle() > heading) { // Very basic correction segment.
                     leftBackDrive.setPower(-power-0.05);
@@ -214,8 +191,8 @@ public class autonomous extends LinearOpMode
                     rightFrontDrive.setPower(-power);
                 }
                 // Forcibly update telemetry in the move.
-                telemetry.addData("Encoder 1", craneExtend.getCurrentPosition());
-                telemetry.addData("Encoder 2", fakeMotor.getCurrentPosition());
+                telemetry.addData("Encoder 1", launcherLeft.getCurrentPosition());
+                telemetry.addData("Encoder 2", launcherRight.getCurrentPosition());
                 telemetry.addData("Degree" , getAngle());
                 telemetry.addData("Heading" , heading);
                 telemetry.update();
@@ -223,13 +200,13 @@ public class autonomous extends LinearOpMode
         }
         else if(direction == "backward") { // Move backward
             leftBackDrive.setPower(power); // Once again, backward is positive power and vice versa...
-            rightBackDrive.setPower(power);
+            rightBackDrive.setPower(power); // and yes, I am too afraid to change it :(
             leftFrontDrive.setPower(power);
             rightFrontDrive.setPower(power);
-            while(!isStopRequested() && -pulses < craneExtend.getCurrentPosition() && timeout + moveStart > runtime.seconds()) {
+            while(!isStopRequested() && -pulses < launcherLeft.getCurrentPosition() && timeout + moveStart > runtime.seconds()) {
                 // If we are NOT stopped, and negative desired pulses are LESS than what our wheels register, we have NOT exceeded our timeout, then continue.
                 if (getAngle() > heading) { // Very basic correction segment.
-                    leftBackDrive.setPower(power-0.1);
+                    leftBackDrive.setPower(power-0.1); // actually its stupid, but it works, take that past me
                     rightBackDrive.setPower(power);
                     leftFrontDrive.setPower(power-0.1);
                     rightFrontDrive.setPower(power);
@@ -247,8 +224,8 @@ public class autonomous extends LinearOpMode
                     rightFrontDrive.setPower(power);
                 }
                 // Forcibly update telemetry in the move.
-                telemetry.addData("Encoder 1", craneExtend.getCurrentPosition());
-                telemetry.addData("Encoder 2", fakeMotor.getCurrentPosition());
+                telemetry.addData("Encoder 1", launcherLeft.getCurrentPosition());
+                telemetry.addData("Encoder 2", launcherRight.getCurrentPosition());
                 telemetry.addData("Degree" , getAngle());
                 telemetry.addData("Heading" , heading);
                 telemetry.update();
@@ -256,13 +233,13 @@ public class autonomous extends LinearOpMode
         }
         else if (direction == "right") { // Move right
             leftBackDrive.setPower(power); //Set the power like this...
-            rightBackDrive.setPower(-power);
+            rightBackDrive.setPower(-power); // you know the drill though...
             leftFrontDrive.setPower(-power);
             rightFrontDrive.setPower(power);
-            while (!isStopRequested() && -pulses < fakeMotor.getCurrentPosition() && timeout + moveStart > runtime.seconds()) {
+            while (!isStopRequested() && -pulses < launcherRight.getCurrentPosition() && timeout + moveStart > runtime.seconds()) {
                 // If we are NOT stopped, and negative desired pulses are LESS than what our wheels register, we have NOT exceeded our timeout, then continue.
-                telemetry.addData("Encoder 1", craneExtend.getCurrentPosition()); // FORCIBLY update telemetry in the move.
-                telemetry.addData("Encoder 2", fakeMotor.getCurrentPosition());
+                telemetry.addData("Encoder 1", launcherLeft.getCurrentPosition()); // FORCIBLY update telemetry in the move.
+                telemetry.addData("Encoder 2", launcherRight.getCurrentPosition()); // Making the correction function for this would make my brain explode
                 telemetry.addData("Degree" , getAngle());
                 telemetry.addData("Heading" , heading);
                 telemetry.update(); 
@@ -273,9 +250,9 @@ public class autonomous extends LinearOpMode
             rightBackDrive.setPower(power);
             leftFrontDrive.setPower(power);
             rightFrontDrive.setPower(-power);
-            while(!isStopRequested() && pulses > fakeMotor.getCurrentPosition() && timeout + moveStart > runtime.seconds()) {
-                telemetry.addData("Encoder 1", craneExtend.getCurrentPosition()); // FORCIBLY update telemetry in the move.
-                telemetry.addData("Encoder 2", fakeMotor.getCurrentPosition());
+            while(!isStopRequested() && pulses > launcherRight.getCurrentPosition() && timeout + moveStart > runtime.seconds()) {
+                telemetry.addData("Encoder 1", launcherLeft.getCurrentPosition()); // FORCIBLY update telemetry in the move.
+                telemetry.addData("Encoder 2", launcherRight.getCurrentPosition());
                 telemetry.addData("Degree" , getAngle());
                 telemetry.addData("Heading" , heading);
                 telemetry.update();
@@ -283,7 +260,7 @@ public class autonomous extends LinearOpMode
         }
         resetMove(); // Reset our odometry and stop the wheels.
     }
-    /*
+    /* // yeah, I used a worthless function for an entire season. take that non-coders, you have no idea what I am doing
     public void strafe(String direction, int pulses, double power, double timeout) { 
         // Strafe [direction] for [pulse] pulses at [power] power
         double moveStart = runtime.seconds();
@@ -341,8 +318,8 @@ public class autonomous extends LinearOpMode
             leftFrontDrive.setPower(power);
             rightFrontDrive.setPower(-power);
             while (!isStopRequested() && getAngle() < heading) { // FORCIBLY update telemetry
-                telemetry.addData("Encoder 1", craneExtend.getCurrentPosition());
-                telemetry.addData("Encoder 2", fakeMotor.getCurrentPosition());
+                telemetry.addData("Encoder 1", launcherLeft.getCurrentPosition());
+                telemetry.addData("Encoder 2", launcherRight.getCurrentPosition());
                 telemetry.addData("Degree" , getAngle());
                 telemetry.addData("Heading" , heading);
                 telemetry.update();
@@ -355,8 +332,8 @@ public class autonomous extends LinearOpMode
             leftFrontDrive.setPower(-power);
             rightFrontDrive.setPower(power);
             while (!isStopRequested() && getAngle() > heading) {
-                telemetry.addData("Encoder 1", craneExtend.getCurrentPosition());
-                telemetry.addData("Encoder 2", fakeMotor.getCurrentPosition());
+                telemetry.addData("Encoder 1", launcherLeft.getCurrentPosition());
+                telemetry.addData("Encoder 2", launcherRight.getCurrentPosition());
                 telemetry.addData("Degree" , getAngle());
                 telemetry.addData("Heading" , heading);
                 telemetry.update();
@@ -371,8 +348,8 @@ public class autonomous extends LinearOpMode
         leftFrontDrive.setPower(0);
         rightFrontDrive.setPower(0);
         sleep(100); // Pause a bit
-        craneExtend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // Reset the encoders.
-        fakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        launcherLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // Reset the encoders.
+        launcherRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
     private void resetAngle() { // Resets angle heading
