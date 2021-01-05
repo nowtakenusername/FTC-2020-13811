@@ -15,10 +15,9 @@ public class gamepad extends LinearOpMode {
 
     // Initial creation of objects for motors and servos. They are assigned to their ports below.
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftBackDrive, rightBackDrive, rightFrontDrive, leftFrontDrive;
-    // private DcMotor craneExtend, cranePitch, craneElevate, fakeMotor;
-    // private Servo craneGrab, trayGrab, craneGrabAttitude, flipperLeft, flipperRight;
-    private Servo goalClamp, goalDeploy;
+    private DcMotor leftBackDrive, rightBackDrive, rightFrontDrive, leftFrontDrive,
+                    launcherLeft, launcherRight, launcherElevate,conveyorDrive;
+    private Servo grabberLeft, grabberRight, ringFeeler;
     public void runOpMode() {
         
 //******************************************************************************
@@ -29,37 +28,19 @@ public class gamepad extends LinearOpMode {
         rightBackDrive = hardwareMap.get(DcMotor.class, "right_back_drive"); //port 1, hub2
         leftFrontDrive = hardwareMap.get(DcMotor.class, "left_front_drive"); //port 0, hub1
         rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive"); //port !, hub1
-        goalClamp = hardwareMap.get(Servo.class, "goalClamp");
-        goalDeploy = hardwareMap.get(Servo.class, "goalDeploy");
-        
-        // Disabled for now, this is legacy content
-        // craneExtend = hardwareMap.get(DcMotor.class, "craneExtend"); //port 0, hub2
-        // cranePitch = hardwareMap.get(DcMotor.class, "cranePitch"); //port 1, hub2
-        // craneElevate = hardwareMap.get(DcMotor.class, "craneElevate"); //port 2, hub2
-        // fakeMotor = hardwareMap.get(DcMotor.class, "fakeMotor"); //port 2, hub3
-        // craneGrab = hardwareMap.get(Servo.class, "craneGrab"); //port 0, servo
-        // craneGrabAttitude = hardwareMap.get(Servo.class, "craneGrabAttitude"); //port 2, servo
-        // trayGrab = hardwareMap.get(Servo.class, "trayGrab"); //port 1, servo
-        // flipperLeft = hardwareMap.get(Servo.class, "flipperLeft"); //port 3. servo
-        // flipperRight = hardwareMap.get(Servo.class, "flipperRight"); //port 4, servo
-        
-        // Resets encoders used for the crane. This is an artifact from last year, and we used it for easier testing; in autonomous the
-        // crane was "deployed" before it went under the bridge as it had to be tucked into the robot to fit length restrictions.
-        // craneElevate.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        // cranePitch.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        // fakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        
-        // Sets motors to run to [pulses] encoder pulses
-        // craneElevate.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        // cranePitch.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        launcherLeft = hardwareMap.get(DcMotor.class, "launcherLeft");
+        launcherRight = hardwareMap.get(DcMotor.class, "launcherRight");
+        launcherElevate = hardwareMap.get(DcMotor.class, "launcherElevate");
+        conveyorDrive = hardwareMap.get(DcMotor.class, "conveyorDrive");
+        grabberLeft = hardwareMap.get(Servo.class, "grabberLeft");
+        grabberRight = hardwareMap.get(Servo.class, "grabberRight");
+        ringFeeler = hardwareMap.get(Servo.class, "ringFeeler");
         
         // Testing encoder stuff 
-        // leftBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightBackDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         leftBackDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         leftFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        // leftBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         
         
@@ -68,6 +49,9 @@ public class gamepad extends LinearOpMode {
         rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
         leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
+        
+        launcherLeft.setDirection(DcMotor.Direction.REVERSE);
+        launcherRight.setDirection(DcMotor.Direction.FORWARD);
 
         // Variable declaration
         double driveX = 0; // Used for diagonal control, positive is forward
@@ -107,36 +91,42 @@ public class gamepad extends LinearOpMode {
             }
             
 //*****************************************************************************
-            //wobble goal grabber commands
+            // Grabber controls \\
             
-            if(gamepad1.x && goalDeploy.getPosition() > 0.5){//toggles wobble goal grabber with X
-                goalDeploy.setPosition(1);
-                sleep(1000); // 1 seconds
-                goalClamp.setPosition(1);
-            }
-            if(gamepad1.x && goalDeploy.getPosition() < 0.5){//toggles wobble goal grabber with X
-                goalDeploy.setPosition(0);
-                sleep(1000);
-                goalClamp.setPosition(0);
-            }
+            // if(gamepad1.x && goalDeploy.getPosition() > 0.5){//toggles wobble goal grabber with X
+            //     goalDeploy.setPosition(1);
+            //     sleep(1000); // 1 seconds
+            //     goalClamp.setPosition(1);
+            // }
+            // if(gamepad1.x && goalDeploy.getPosition() < 0.5){//toggles wobble goal grabber with X
+            //     goalDeploy.setPosition(0);
+            //     sleep(1000);
+            //     goalClamp.setPosition(0);
+            // }
+            
 //******************************************************************************
 
-            // Crane controls \\
-            //cranePitch.setPower(gamepad2.left_stick_y);
+            // Launcher controls \\
+            if(gamepad2.right_trigger >= 0.1) {
+                launcherLeft.setPower(gamepad2.right_trigger);
+                launcherRight.setPower(gamepad2.right_trigger);
+            }
+            if(gamepad2.right_trigger < 0.1) {
+                launcherLeft.setPower(0);
+                launcherRight.setPower(0);
+            }
             
 //******************************************************************************
             
             // Servo controls \\
-            //if(gamepad2.down) {
-                
-            //}
-
+            
+            
 //******************************************************************************
 
             // Telemetry display \\
             telemetry.addData("Run Time:", "" + runtime.toString());
             telemetry.addData("Motor Power", "LR (%.2f), FB (%.2f)", gamepad1.left_stick_x, gamepad1.left_stick_y);
-            telemetry.addData(" Left Back Encoder ", leftBackDrive.getCurrentPosition());
+            telemetry.addData("Launcher Power ", gamepad2.right_trigger);
             telemetry.update();
         }
     }
