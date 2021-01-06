@@ -59,6 +59,9 @@ public class gamepad extends LinearOpMode {
         double driveTurn = 0; // Used for turning controls
         double speed = 0.5;
         double speedTimer = 0;
+        boolean launcherManual = true; // True means we are using the manual launcher spinup mode.
+        double launcherSpeed = 0.5; // Used for \'automatedly\' changing the launcher speed.
+        double launcherTimer = 0; // Used for ensuring that the speed doesn't increase a bajilion times a second.
       
         telemetry.addData("Status", "Initialized");
         telemetry.update(); // Done initalizing
@@ -107,13 +110,26 @@ public class gamepad extends LinearOpMode {
 //******************************************************************************
 
             // Launcher controls \\
-            if(gamepad2.right_trigger >= 0.1) {
-                launcherLeft.setPower(gamepad2.right_trigger);
-                launcherRight.setPower(gamepad2.right_trigger);
+            // There are two modes, one manual and the other automated. Manual is used for debugging purposes.
+            if(launcherManual == true) { // Using trigger controls.
+                if(gamepad2.right_trigger >= 0.1) { // Note that it isn't set to >= 0. Sometimes you have to do things like that for foolproofing.
+                    launcherLeft.setPower(gamepad2.right_trigger);
+                    launcherRight.setPower(gamepad2.right_trigger);
+                }
+                if(gamepad2.right_trigger < 0.1) { // aand anything else...
+                    launcherLeft.setPower(0);
+                    launcherRight.setPower(0);
+                }
+                
+                if(gamepad2.a && gamepad2.b) { // Changing modes.
+                    launcherManual = false;
+                }
             }
-            if(gamepad2.right_trigger < 0.1) {
-                launcherLeft.setPower(0);
-                launcherRight.setPower(0);
+            if(launcherManual == false) {
+                if(gamepad2.dpad_up) {
+                    return; //and stuff...
+                }
+                
             }
             
 //******************************************************************************
