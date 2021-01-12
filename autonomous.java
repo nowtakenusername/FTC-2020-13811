@@ -38,85 +38,85 @@ public class autonomous extends LinearOpMode
     public double feelState = 1;
     @Override
     public void runOpMode() {
-        // Assign the hardwareMap to be used later on
-        leftBackDrive  = hardwareMap.get(DcMotor.class, "left_back_drive"); // expansion hub port 0
-        rightBackDrive = hardwareMap.get(DcMotor.class, "right_back_drive"); // expansion hub port 1
-        leftFrontDrive = hardwareMap.get(DcMotor.class, "left_front_drive"); // control hub port 0
-        rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive"); // control hub port 1
-        launcherLeft = hardwareMap.get(DcMotor.class, "launcherLeft"); // control hub port 2
-        launcherRight = hardwareMap.get(DcMotor.class, "launcherRight"); // control hub port 3
-        launcherElevate = hardwareMap.get(DcMotor.class, "launcherElevate"); // expansion hub port 2
-        conveyorDrive = hardwareMap.get(DcMotor.class, "conveyorDrive"); // expansion hub port 3
+        // Assign the hardwareMap to be used later on.
+        leftBackDrive  = hardwareMap.get(DcMotor.class, "left_back_drive"); // control hub port 0
+        rightBackDrive = hardwareMap.get(DcMotor.class, "right_back_drive"); // control hub port 1
+        leftFrontDrive = hardwareMap.get(DcMotor.class, "left_front_drive"); // control hub port 2
+        rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive"); // control hub port 2
+        launcherLeft = hardwareMap.get(DcMotor.class, "launcherLeft"); // expansion hub port 0
+        launcherRight = hardwareMap.get(DcMotor.class, "launcherRight"); // expansion hub port 1
+        conveyorDrive = hardwareMap.get(DcMotor.class, "conveyorDrive"); // expansion hub port 2
         ringFeeler = hardwareMap.get(Servo.class, "ringFeeler"); // control hub servo port 0
-        goalClamp = hardwareMap.get(Servo.class, "goalClamp"); // control hub servo port 2
-        goalDeploy = hardwareMap.get(Servo.class, "goalDeploy"); // control hub servo port 3
+        goalClamp = hardwareMap.get(Servo.class, "goalLeft"); // control hub servo port 1
+        goalDeploy = hardwareMap.get(Servo.class, "goalRight"); // control hub servo port 2
         conveyorLeft = hardwareMap.get(Servo.class, "conveyorLeft"); // expansion hub servo port 0
         conveyorRight = hardwareMap.get(Servo.class, "conveyorRight"); // expansion hub servo port 1
         imu = hardwareMap.get(BNO055IMU.class, "imu"); // core internal module in control hub
         
-        // Setting up imu parameters and config...
+        // Setting up imu parameters...
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.mode = BNO055IMU.SensorMode.IMU;
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.loggingEnabled = false;
+        parameters.loggingEnabled = false; // Don't fill the log up with garbage...
     
-        // Set up odometry wheels
-        launcherLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // yes, we use the launcher rollers as our encoder port donors...
-        launcherRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        // Settng up odometry wheels...
+        launcherLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // We use the launcher rollers as our encoder port donors...
+        launcherRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // It's the simplest way we can do it.
         launcherLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launcherRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         
-        // Set motor directions
-        leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
-        leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
+        // Set motor directions...
+        leftBackDrive.setDirection(DcMotor.Direction.FORWARD); // The motor directions are seriously messed up.
+        rightBackDrive.setDirection(DcMotor.Direction.REVERSE); // Forwards is backwards, and vice versa.
+        leftFrontDrive.setDirection(DcMotor.Direction.FORWARD); // But, since it works pretty nicely with the invertedness of the gamepad's sticks,
+        rightFrontDrive.setDirection(DcMotor.Direction.REVERSE); // we keep it like this.
         launcherLeft.setDirection(DcMotor.Direction.FORWARD);
         launcherRight.setDirection(DcMotor.Direction.REVERSE);
         
-        // Initialize the imu...
+        // Initialize the imu
         imu.initialize(parameters);
         // and calibrate the gyro...
         telemetry.addData("Mode", "calibrating...");
         telemetry.update();
-        while (!isStopRequested() && !imu.isGyroCalibrated())
+        while (!isStopRequested() && !imu.isGyroCalibrated()) // Just ensure that it REALLY calibrates...
         { sleep(50); idle(); }
         // and done.
         
-        // Telemetry displays that initialization is complete.
+        // Telemetry displays that the initialization is complete
         telemetry.addData("Status", "Initialized");
-        telemetry.update();
+        telemetry.update(); // and update, of course.
 
-        waitForStart();
-        runtime.reset();
-        // You a wizard Harri(son) <- comedian right here
+        waitForStart(); // Wait for the game to start.
+        runtime.reset(); // Reset runtime. We don't have to do this, but it's useful for logging purposes.
+        
         // Moves go here:
-        // and REMEMBER TO FOLLOW SYNTAX!!
+        // As a bit of background, since this code is different than many other teams, we use functions with (dangerous)
+        // while loops to ensure that the move is completed before we move onto the next one. The functions have a few
+        // parameters to allow for simple programming and rapid turnaround for our autonomous. This is the same method
+        // we used last year, and we see no reason in changing it for the meantime until we get Android Studio working.
+        // Moves will be explained in their respective function bodies.
         move("forward", 47*40, 0.5, 100);
         feel();
-        
-        if(feelState == 0) { //no donuts :(
+        if(feelState == 0) { // No donuts :(
             move("forward", 38 * 47,0.5, 100);
             move("right", 22 * 47,0.5, 100);
             drop();
             move("left", 22 * 47,0.5, 100);
             move("backward", 15 * 47,0.5, 100);
         }
-        else if(feelState == 4) { //four donut
+        else if(feelState == 4) { // Four donuts
             move("forward", 83 * 47,0.5, 100);
             move("right", 22 * 47,0.5, 100);
             drop();
             move("left", 22 * 47,0.5, 100);
             move("backward", 60 * 47,0.5, 100);
         }
-        else { //one donut
+        else { // One donut
           move("forward", 63 * 47,0.5, 100);
             drop();
             move("backward", 40 * 47,0.5, 100);
         }
-        
-        
         move("forward", 23 * 47, 0.5, 100);
         //remove the line above once the if statements work
         move("right", 12 * 47,0.5, 100);
@@ -126,55 +126,19 @@ public class autonomous extends LinearOpMode
         move("forward", 47*10,0.5,100);
     }
     
-    public void drop(){ //drop off the wobble goal
-        goalDeploy.setPosition(1);
-        sleep(1000); // 1 seconds
-        goalClamp.setPosition(0);
-        sleep(50);
-        goalDeploy.setPosition(0);
-        sleep(1000);
-        goalClamp.setPosition(1);
-    }
-    public void shoot(String goal){ //shoot the rings at a goal
-        if(goal == "low") { //shoot for the low goal
-            
-        }
-        else if(goal == "mid") { //shoot for mid goal
-            
-        }
-        else if(goal == "high"){//shoot for high goal
-            
-        }
-        else { //shoot for power shot targets
-          
-        }
-    }
-    public void feel(){ // feel amount of rings and change feelState
-        ringFeeler.setPosition(0.9); //we're going down
-        if(ringFeeler.getPosition() > 0.5 && ringFeeler.getPosition() < 0.7) { //four rings
-            feelState = 4;
-        }
-        else if(ringFeeler.getPosition() >= 0.7 && ringFeeler.getPosition() < 0.8) { //one ring
-            feelState = 1;
-        }
-        else { //zero rings
-            feelState = 0;
-        }
-        ringFeeler.setPosition(0); //back up please
-    }
-    public void move(String direction, int pulses, double power, double timeout) { //NEED WORK ON MOVING DIAGONALLY OR JUST DO CRAB & MOVE
+    public void move(String direction, int pulses, double power, double timeout) {
         // Move [direction] [pulse] pulses at [power] power.
-        double moveStart = runtime.seconds();
-        if(direction == "forward") { // Move forward 
-            leftBackDrive.setPower(-power); // Yes, forward is backward...
+        double moveStart = runtime.seconds(); // Prepare for the timeout feature in the logic to come later.
+        if(direction == "forward") { // If we are moving forward...
+            leftBackDrive.setPower(-power); // Yes, forward is indeed backward.
             rightBackDrive.setPower(-power);
             leftFrontDrive.setPower(-power);
             rightFrontDrive.setPower(-power);
-            while(!isStopRequested() && pulses > launcherLeft.getCurrentPosition() && timeout + moveStart > runtime.seconds()) { // funny logic
-                // If we are NOT stopped, and desired pulses are more than what our wheels register, we have NOT exceeded our timeout, then continue.
-                if (getAngle() > heading) { // Very basic correction segment.
-                    leftBackDrive.setPower(-power-0.05);
-                    rightBackDrive.setPower(-power+0.05);
+            while(!isStopRequested() && pulses > launcherLeft.getCurrentPosition() && timeout + moveStart > runtime.seconds()) {
+                // If we are NOT stopped, and desired pulses are more than what our wheels register, and we have not registered a timeout, then continue.
+                if (getAngle() > heading) { // This statement attempts to correct the robot to its heading if it is not already corrected.
+                    leftBackDrive.setPower(-power-0.05); // Keep in mind that this will create a sort of wiggling motion as the robot is in motion.
+                    rightBackDrive.setPower(-power+0.05); // This is unavoidable unless we use a PID, which is a serious challenge to set up.
                     leftFrontDrive.setPower(-power-0.05);
                     rightFrontDrive.setPower(-power+0.05);
                 }
@@ -184,7 +148,7 @@ public class autonomous extends LinearOpMode
                     leftFrontDrive.setPower(-power+0.05);
                     rightFrontDrive.setPower(-power-0.05);
                 }
-                else {
+                else { // This else statement, believe it or not, will never execute.
                     leftBackDrive.setPower(-power);
                     rightBackDrive.setPower(-power);
                     leftFrontDrive.setPower(-power);
@@ -198,15 +162,15 @@ public class autonomous extends LinearOpMode
                 telemetry.update();
             }
         }
-        else if(direction == "backward") { // Move backward
+        else if(direction == "backward") { // If we are moving backward...
             leftBackDrive.setPower(power); // Once again, backward is positive power and vice versa...
-            rightBackDrive.setPower(power); // and yes, I am too afraid to change it :(
+            rightBackDrive.setPower(power); // and yes, I am too afraid to change it.
             leftFrontDrive.setPower(power);
             rightFrontDrive.setPower(power);
             while(!isStopRequested() && -pulses < launcherLeft.getCurrentPosition() && timeout + moveStart > runtime.seconds()) {
-                // If we are NOT stopped, and negative desired pulses are LESS than what our wheels register, we have NOT exceeded our timeout, then continue.
-                if (getAngle() > heading) { // Very basic correction segment.
-                    leftBackDrive.setPower(power-0.1); // actually its stupid, but it works, take that past me
+                // If we are NOT stopped, and negative desired pulses are less than what our wheels register, and we have not registered a timeout, then continue.
+                if (getAngle() > heading) {
+                    leftBackDrive.setPower(power-0.1);
                     rightBackDrive.setPower(power);
                     leftFrontDrive.setPower(power-0.1);
                     rightFrontDrive.setPower(power);
@@ -231,26 +195,28 @@ public class autonomous extends LinearOpMode
                 telemetry.update();
             }
         }
-        else if (direction == "right") { // Move right
-            leftBackDrive.setPower(power); //Set the power like this...
-            rightBackDrive.setPower(-power); // you know the drill though...
+        else if (direction == "right") { // If we are moving right...
+            leftBackDrive.setPower(power); // Set the power like this...
+            rightBackDrive.setPower(-power);
             leftFrontDrive.setPower(-power);
             rightFrontDrive.setPower(power);
             while (!isStopRequested() && -pulses < launcherRight.getCurrentPosition() && timeout + moveStart > runtime.seconds()) {
-                // If we are NOT stopped, and negative desired pulses are LESS than what our wheels register, we have NOT exceeded our timeout, then continue.
+            // Same situation as the backward logic, but sideways. 
+            // Making the correction function for this would make my brain explode, unfortunately.
                 telemetry.addData("Encoder 1", launcherLeft.getCurrentPosition()); // FORCIBLY update telemetry in the move.
-                telemetry.addData("Encoder 2", launcherRight.getCurrentPosition()); // Making the correction function for this would make my brain explode
+                telemetry.addData("Encoder 2", launcherRight.getCurrentPosition());
                 telemetry.addData("Degree" , getAngle());
                 telemetry.addData("Heading" , heading);
                 telemetry.update(); 
             }
         }
-        else if (direction == "left") { //Move left
-            leftBackDrive.setPower(-power);
+        else if (direction == "left") { // If we are moving left...
+            leftBackDrive.setPower(-power); // Set the power like this...
             rightBackDrive.setPower(power);
             leftFrontDrive.setPower(power);
             rightFrontDrive.setPower(-power);
             while(!isStopRequested() && pulses > launcherRight.getCurrentPosition() && timeout + moveStart > runtime.seconds()) {
+            // Same situation as the forward logic, but sideways. 
                 telemetry.addData("Encoder 1", launcherLeft.getCurrentPosition()); // FORCIBLY update telemetry in the move.
                 telemetry.addData("Encoder 2", launcherRight.getCurrentPosition());
                 telemetry.addData("Degree" , getAngle());
@@ -258,66 +224,19 @@ public class autonomous extends LinearOpMode
                 telemetry.update();
             }
         }
-        resetMove(); // Reset our odometry and stop the wheels.
+        resetMove();
     }
-    /* // yeah, I used a worthless function for an entire season. take that non-coders, you have no idea what I am doing
-    public void strafe(String direction, int pulses, double power, double timeout) { 
-        // Strafe [direction] for [pulse] pulses at [power] power
-        double moveStart = runtime.seconds();
-        if (direction == "right") { // Strafe right
-            leftBackDrive.setPower(power); //Set the power like this...
-            rightBackDrive.setPower(-power);
-            leftFrontDrive.setPower(-power);
-            rightFrontDrive.setPower(power);
-            while (!isStopRequested() && -pulses < fakeMotor.getCurrentPosition() && timeout + moveStart > runtime.seconds()) {
-                // If we are NOT stopped, and negative desired pulses are LESS than what our wheels register, we have NOT exceeded our timeout, then continue.
-                telemetry.addData("Encoder 1", craneExtend.getCurrentPosition()); // FORCIBLY update telemetry in the move.
-                telemetry.addData("Encoder 2", fakeMotor.getCurrentPosition());
-                telemetry.addData("Degree" , getAngle());
-                telemetry.addData("Heading" , heading);
-                telemetry.update(); 
-            }
-        }
-        else if (direction == "left") { //move the robot like a crab to the left
-            leftBackDrive.setPower(-power);
-            rightBackDrive.setPower(power);
-            leftFrontDrive.setPower(power);
-            rightFrontDrive.setPower(-power);
-            while(!isStopRequested() && pulses > fakeMotor.getCurrentPosition() && timeout + moveStart > runtime.seconds()) {
-                telemetry.addData("Encoder 1", craneExtend.getCurrentPosition()); // FORCIBLY update telemetry in the move.
-                telemetry.addData("Encoder 2", fakeMotor.getCurrentPosition());
-                telemetry.addData("Degree" , getAngle());
-                telemetry.addData("Heading" , heading);
-                telemetry.update();
-            }
-        }
-        resetMove(); // Reset our odometry and stop the wheels.
-    }
-    */
-    // This will allow the robot to move DIAGONALLY in autonomous, rough stuff to do but it can be done
-    // public void move(double driveX, double driveY, int pulses, double power, double timeout) { // Set a [vector] and move [pulse] pulses at [power] power
-    //     double moveStart = runtime.seconds(); // Used for the timeout variable.
-    //     // Set the vector!
-    //     //BUT LATER
-        
-    //     double speed = 0.5;
-    //     leftBackDrive.setPower((driveX - driveZ) - driveTurn);
-    //     rightBackDrive.setPower((driveX + driveZ) + driveTurn);
-    //     leftFrontDrive.setPower((driveX + driveZ) - driveTurn);
-    //     rightFrontDrive.setPower((driveX - driveZ) + driveTurn);
-    //     }
-    //     resetMove();
-    // }
     
     public void rotate(String direction, double degrees, double power) { 
         // Rotate [direction] [degrees] degrees at [power] power
-        if (direction == "left") { // Rotate left
-            heading += degrees; //(h = h + d) Setting a heading for correction purposes
+        // There is no timeout, as if we somehow fail to reach our targeted angle the autonomous is ruined anyway.
+        if (direction == "left") { // If we are rotating left...
+            heading += degrees; // Setting a heading for correction purposes
             leftBackDrive.setPower(power);
             rightBackDrive.setPower(-power);
             leftFrontDrive.setPower(power);
             rightFrontDrive.setPower(-power);
-            while (!isStopRequested() && getAngle() < heading) { // FORCIBLY update telemetry
+            while (!isStopRequested() && getAngle() < heading) { // FORCIBLY update telemetry, but also make sure we don't go on yet.
                 telemetry.addData("Encoder 1", launcherLeft.getCurrentPosition());
                 telemetry.addData("Encoder 2", launcherRight.getCurrentPosition());
                 telemetry.addData("Degree" , getAngle());
@@ -325,13 +244,13 @@ public class autonomous extends LinearOpMode
                 telemetry.update();
             }
         }
-        if (direction == "right") { // Rotate right
-            heading -= degrees;
+        if (direction == "right") { // If we are rotating right...
+            heading -= degrees; // Setting a heading for correction purposes
             leftBackDrive.setPower(-power);
             rightBackDrive.setPower(power);
             leftFrontDrive.setPower(-power);
             rightFrontDrive.setPower(power);
-            while (!isStopRequested() && getAngle() > heading) {
+            while (!isStopRequested() && getAngle() > heading) { // FORCIBLY update telemetry, but also make sure we don't go on yet.
                 telemetry.addData("Encoder 1", launcherLeft.getCurrentPosition());
                 telemetry.addData("Encoder 2", launcherRight.getCurrentPosition());
                 telemetry.addData("Degree" , getAngle());
@@ -339,9 +258,48 @@ public class autonomous extends LinearOpMode
                 telemetry.update();
             }
         }
-        resetMove();// Reset our odometry and stop the wheels.
+        resetMove();
     }
-
+    
+    public void drop(){ // Drop off the wobble goal.
+        goalDeploy.setPosition(1);
+        sleep(1000); // 1 second.
+        goalClamp.setPosition(0);
+        sleep(50); // 0.05 seconds.
+        goalDeploy.setPosition(0);
+        sleep(1000); // 1 second.
+        goalClamp.setPosition(1);
+    }
+    
+    public void feel(){ // Feel amount of rings and change feelState
+        ringFeeler.setPosition(0.9); //we're going down
+        if(ringFeeler.getPosition() > 0.5 && ringFeeler.getPosition() < 0.7) { //four rings
+            feelState = 4;
+        }
+        else if(ringFeeler.getPosition() >= 0.7 && ringFeeler.getPosition() < 0.8) { //one ring
+            feelState = 1;
+        }
+        else { //zero rings
+            feelState = 0;
+        }
+        ringFeeler.setPosition(0); //back up please
+    }
+    
+    public void shoot(String goal){ //shoot the rings at a goal
+        if(goal == "low") { //shoot for the low goal
+            
+        }
+        else if(goal == "mid") { //shoot for mid goal
+            
+        }
+        else if(goal == "high"){//shoot for high goal
+            
+        }
+        else { //shoot for power shot targets
+          
+        }
+    }
+    
     public void resetMove() { // Reset encoder values and stop wheels
         leftBackDrive.setPower(0); // Zero them out
         rightBackDrive.setPower(0);
