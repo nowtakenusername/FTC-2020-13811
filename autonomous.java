@@ -1,4 +1,3 @@
-//top
 // Directory
 package org.firstinspires.ftc.teamcode;
 
@@ -95,6 +94,7 @@ public class autonomous extends LinearOpMode
         // while loops to ensure that the move is completed before we move onto the next one. The functions have a few
         // parameters to allow for simple programming and rapid turnaround for our autonomous. This is the same method
         // we used last year, and we see no reason in changing it for the meantime until we get Android Studio working.
+        // This is the code that will be used in an ideal scenario where the building team does what they are supposed to.
         // Moves will be explained in their respective function bodies.
         move("forward", 47*40, 0.5, 100);
         feel();
@@ -118,7 +118,6 @@ public class autonomous extends LinearOpMode
             move("backward", 40 * 47,0.5, 100);
         }
         move("forward", 23 * 47, 0.5, 100);
-        //remove the line above once the if statements work
         move("right", 12 * 47,0.5, 100);
         shoot("high");
         shoot("high");
@@ -201,8 +200,8 @@ public class autonomous extends LinearOpMode
             leftFrontDrive.setPower(-power);
             rightFrontDrive.setPower(power);
             while (!isStopRequested() && -pulses < launcherRight.getCurrentPosition() && timeout + moveStart > runtime.seconds()) {
-            // Same situation as the backward logic, but sideways. 
-            // Making the correction function for this would make my brain explode, unfortunately.
+                // Same situation as the backward logic, but sideways. 
+                // Making the correction function for this would give me a massive headache, unfortunately.
                 telemetry.addData("Encoder 1", launcherLeft.getCurrentPosition()); // FORCIBLY update telemetry in the move.
                 telemetry.addData("Encoder 2", launcherRight.getCurrentPosition());
                 telemetry.addData("Degree" , getAngle());
@@ -216,7 +215,7 @@ public class autonomous extends LinearOpMode
             leftFrontDrive.setPower(power);
             rightFrontDrive.setPower(-power);
             while(!isStopRequested() && pulses > launcherRight.getCurrentPosition() && timeout + moveStart > runtime.seconds()) {
-            // Same situation as the forward logic, but sideways. 
+                // Same situation as the forward logic, but sideways. 
                 telemetry.addData("Encoder 1", launcherLeft.getCurrentPosition()); // FORCIBLY update telemetry in the move.
                 telemetry.addData("Encoder 2", launcherRight.getCurrentPosition());
                 telemetry.addData("Degree" , getAngle());
@@ -272,51 +271,56 @@ public class autonomous extends LinearOpMode
     }
     
     public void feel(){ // Feel amount of rings and change feelState
-        ringFeeler.setPosition(0.9); //we're going down
-        if(ringFeeler.getPosition() > 0.5 && ringFeeler.getPosition() < 0.7) { //four rings
+        ringFeeler.setPosition(0.9); // Drop servo feeler
+        if(ringFeeler.getPosition() > 0.5 && ringFeeler.getPosition() < 0.7) { // Four rings
             feelState = 4;
         }
-        else if(ringFeeler.getPosition() >= 0.7 && ringFeeler.getPosition() < 0.8) { //one ring
+        else if(ringFeeler.getPosition() >= 0.7 && ringFeeler.getPosition() < 0.8) { // One ring
             feelState = 1;
         }
-        else { //zero rings
+        else { // Zero rings
             feelState = 0;
         }
-        ringFeeler.setPosition(0); //back up please
+        ringFeeler.setPosition(0); // Back up please...
     }
     
-    public void shoot(String goal){ //shoot the rings at a goal
-        if(goal == "low") { //shoot for the low goal
-            
+    public void shoot(String goal){ // We are shooting rings...
+        if(goal == "low") { // Shoot for the low goal. We likely will not use this, ever.
+            //And we won't do anything with it!
         }
-        else if(goal == "mid") { //shoot for mid goal
-            
+        else if(goal == "mid") { // Shoot for the middle goal. We probably won't use this.
+            launcherLeft.setPower(-0.5);
+            launcherRight.setPower(0.5);
         }
-        else if(goal == "high"){//shoot for high goal
-            
+        else if(goal == "high"){ // Shoot for high goal. We will try to use this.
+            launcherLeft.setPower(-0.8);
+            launcherRight.setPower(0.8);
         }
-        else { //shoot for power shot targets
-          
+        else { // Shoot for the power shot targets. We probably won't use this.
+            launcherLeft.setPower(-1);
+            launcherRight.setPower(1);
         }
     }
     
-    public void resetMove() { // Reset encoder values and stop wheels
-        leftBackDrive.setPower(0); // Zero them out
+    public void resetMove() { // Reset the encoder values and stop the wheels.
+        leftBackDrive.setPower(0); // Zero them out...
         rightBackDrive.setPower(0);
         leftFrontDrive.setPower(0);
         rightFrontDrive.setPower(0);
-        sleep(100); // Pause a bit
-        launcherLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // Reset the encoders.
+        sleep(100); // Pause a bit... (0.1 seconds)
+        launcherLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // and reset the encoders.
         launcherRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
-    private void resetAngle() { // Resets angle heading
+    private void resetAngle() { // Resets angle heading.
         lastAngles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-        globalAngle = 0;
+        // Note that I don't know how the above line works. IMUs are tricky business. 
+        globalAngle = 0; // Resets our global angle heading. It's like the heading variable, but changes more often.
     }
     
-    private double getAngle() { // Converts imu z-axis heading into a proper format
-    // NOTE: I did copy this from the FTC website. No clue how it works, but it does!
+    private double getAngle() { // Converts the IMUs z-axis heading into a proper format.
+    // And by proper format, the IMU normally doesn't see degrees like a compass. It sees them like an bisected inverted compass with ends at 180.
+    // NOTE: I did copy this from the FTC website. Don't see how you do this on your own.
         Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         double deltaAngle = angles.firstAngle - lastAngles.firstAngle;
 
@@ -329,4 +333,4 @@ public class autonomous extends LinearOpMode
         lastAngles = angles;
         return globalAngle;
     }
-} // The END
+} // END
