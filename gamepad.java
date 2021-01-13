@@ -1,5 +1,7 @@
+// Directory
 package org.firstinspires.ftc.teamcode;
 
+// Imports
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -36,56 +38,58 @@ public class gamepad extends LinearOpMode {
         grabberRight = hardwareMap.get(Servo.class, "grabberRight");
         ringFeeler = hardwareMap.get(Servo.class, "ringFeeler");
         
-        // Testing encoder stuff 
+        // Legacy code. This block is not needed, except when the robot spontaneously decides to reset itself. It has happened...
         rightBackDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         leftBackDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         leftFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
         
-        
-        // Assigns the motors to a forward direction. Positive values in the .setPower() are forwards.
+        // Assigns the motors to an inverted direction. Positive values in the .setPower() are backward. Really.
+        // The reasoning behind this is simple - pay attention to the inputs, and your code won't be written entirely backwards.
         leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
         leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
-        
+        // Set the launchers to the right direction. This one is intentionally written backwards.
         launcherLeft.setDirection(DcMotor.Direction.REVERSE);
         launcherRight.setDirection(DcMotor.Direction.FORWARD);
 
         // Variable declaration
         double driveX = 0; // Used for diagonal control, positive is forward
         double driveZ = 0; // Used for diagonal control, positive is right
-        double driveTurn = 0; // Used for turning controls
-        double speed = 0.5;
-        double speedTimer = 0;
+        double driveTurn = 0; // Used for turning while moving diagonally.
+        double speed = 0.5; // Used to adjust the speed of the robot. 
+        double speedTimer = 0; // Used to ensure the speed doesn't increase exponentially in an instant.
         boolean launcherManual = true; // True means we are using the manual launcher spinup mode.
         double launcherSpeed = 0.5; // Used for \'automatedly\' changing the launcher speed.
-        double launcherTimer = 0; // Used for ensuring that the speed doesn't increase a bajilion times a second.
+        double launcherTimer = 0; // Used for ensuring that the speed doesn't increase a hundred times a second.
       
         telemetry.addData("Status", "Initialized");
-        telemetry.update(); // Done initalizing
+        telemetry.update(); // Done initalizing.
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
 
-        // run until the end of the match (driver presses STOP)
+        // Run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             
 //******************************************************************************
             
             // Drive controls \\
-            driveX = gamepad1.left_stick_y * speed;
+            driveX = gamepad1.left_stick_y * speed; // Multiply our inputs by the ideal speed. Defaulted to half power.
             driveZ = gamepad1.left_stick_x * speed;
             driveTurn = gamepad1.right_stick_x * 0.5;
             
+            // This is where we set our drive motors to move diagonally. The robot can move in normal directions, but move the left stick to the side...
+            // and it moves where you want it to. This took considerable time to set up, but it is neatly condensed into four lines.
             leftBackDrive.setPower((driveX - driveZ) - driveTurn);
             rightBackDrive.setPower((driveX + driveZ) + driveTurn);
             leftFrontDrive.setPower((driveX + driveZ) - driveTurn);
             rightFrontDrive.setPower((driveX - driveZ) + driveTurn);
             
             // Speed controls \\
+            // This is a simple delay between inputs, so we do not increase or decrease it too fast.
             if(gamepad1.left_bumper && speed < 1 && speedTimer < runtime.seconds()) {
                 speed+=0.05; speedTimer = runtime.seconds() + 0.5;
             }
@@ -94,6 +98,7 @@ public class gamepad extends LinearOpMode {
             }
             
 //*****************************************************************************
+            
             // Grabber controls \\
             
             // if(gamepad1.x && goalDeploy.getPosition() > 0.5){//toggles wobble goal grabber with X
@@ -116,8 +121,8 @@ public class gamepad extends LinearOpMode {
                     launcherLeft.setPower(gamepad2.right_trigger);
                     launcherRight.setPower(gamepad2.right_trigger);
                 }
-                if(gamepad2.right_trigger < 0.1) { // aand anything else...
-                    launcherLeft.setPower(0);
+                if(gamepad2.right_trigger < 0.1) { // and anything else...
+                    launcherLeft.setPower(0); // Stop the motors.
                     launcherRight.setPower(0);
                 }
                 
