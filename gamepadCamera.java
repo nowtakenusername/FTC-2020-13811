@@ -11,9 +11,17 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
-@TeleOp(name="gamepad", group="Linear Opmode")
+@TeleOp(name="gamepadCamera", group="Linear Opmode")
 //@Disabled
-public class gamepad extends LinearOpMode {
+
+public class gamepadCamera extends LinearOpMode {
+
+    private static final String TFOD_MODEL_ASSET = "UltimateGoal.tflite";
+    private static final String LABEL_FIRST_ELEMENT = "Quad";
+    private static final String LABEL_SECOND_ELEMENT = "Single";
+
+    private static final String VUFORIA_KEY = "AUj2CiD/////AAABmeV6JGe2Y0eyu55x5CrVMzBbTlq4TE9brYNkzy7wmVGIjW4OQsDkpkUwg+OBrgCMbyiG6D3ApoYrz++qh7Y1j5ivMkCcefCAAIPg/hII47NQZWs0qZJzAEej3zB6Vqi6N6a+HBlZM85DREpf51+TWWD1IWJvHdyApzfXF1Iw6MyfnTuUlj0xD/FR+hrpI4iqLg7jawP6OlPJNjjIrf8nzKzuHv8eaQivP3PQvTTMxe4MbF8fK82TUBgFCRjSnQWXRepoVSTqbvlNcaUZEB3mKVY5OwplE+q1UBLSodcORYbEpytvGqXEYP2/pPLGDcIZchzyNkDT6Qkbo9anUiIrr/xyPkI4EVhzb9CNYUlTIBGe";
+
 
     // Initial creation of objects for motors and servos. They are assigned to their ports below.
     private ElapsedTime runtime = new ElapsedTime();
@@ -152,4 +160,3 @@ public class gamepad extends LinearOpMode {
         }
     }
 }
-    
